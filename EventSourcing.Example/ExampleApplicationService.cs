@@ -7,7 +7,7 @@ using System.Text;
 
 namespace EventSourcing.Example
 {
-    internal class ExampleApplicationService : ApplicationService<ExampleId>
+    public class ExampleApplicationService : ApplicationService<ExampleId>
     {
         private readonly IEventStore _store;
 

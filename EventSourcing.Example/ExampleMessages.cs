@@ -10,6 +10,7 @@ namespace EventSourcing.Example
     [DataContract(Namespace = "ExampleContractNamespace")]
     public class ExampleOpened : IEvent<ExampleId>
     {
+        public ExampleOpened() { }
         public ExampleOpened(ExampleId id, DateTime openingDate)
         {
             Id = id;
@@ -26,6 +27,7 @@ namespace EventSourcing.Example
     [DataContract(Namespace = "ExampleContractNamespace")]
     public class OpenExample : ICommand<ExampleId>
     {
+        public OpenExample() { }
         public OpenExample(ExampleId id)
         {
             Id = id;

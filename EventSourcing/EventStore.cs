@@ -6,7 +6,7 @@ namespace EventSourcing
 {
     /// <summary>
     /// Should really just be using this as a wrapper around geteventstore.com
-    /// But have a few original implementations anyway, just in case.
+    /// But have a few original implementations anyway, just for fun.
     /// </summary>
     public interface IEventStore
     {

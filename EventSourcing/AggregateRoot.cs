@@ -29,7 +29,9 @@ namespace EventSourcing
     // It does feel a little icky to have two type parameters on this
     // Another option would be to leave the class slightly more open
     // and with some more abstract properties/methods, maybe something
-    // that could be templated?
+    // that could be templated.
+    // That would also leave the aggregateroot more open to use a
+    // separate state class or not
     public abstract class AggregateRoot<TIdentity, TState> : IAggregateRoot<TIdentity>
         where TIdentity : IIdentity
         where TState : IAggregateState<TIdentity>
@@ -77,6 +79,4 @@ namespace EventSourcing
 
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
     }
-
-
 }
