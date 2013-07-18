@@ -39,7 +39,7 @@ namespace EventSourcing
             var stream = _store.GetEventStreamFor(aggregateId);
             var ctor = typeof(TAggregate).GetConstructor(new [] { typeof(IEnumerable<IEvent>) });
             if(ctor == null)
-                throw new AggregateConstructionException(String.Format("Unable to find constructor that takes a history of events for type {0}", typeof(TAggregate).Name);
+                throw new AggregateConstructionException(String.Format("Unable to find constructor that takes a history of events for type {0}", typeof(TAggregate).Name));
 
             return (TAggregate)ctor.Invoke(new [] { stream.Events });
         }
