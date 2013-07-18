@@ -11,6 +11,7 @@ namespace EventSourcing.Example
     public class ExampleOpened : IEvent<ExampleId>
     {
         public ExampleOpened() { }
+
         public ExampleOpened(ExampleId id, DateTime openingDate)
         {
             Id = id;
@@ -28,12 +29,17 @@ namespace EventSourcing.Example
     public class OpenExample : ICommand<ExampleId>
     {
         public OpenExample() { }
+
         public OpenExample(ExampleId id)
         {
             Id = id;
+            ExpectedVersion = 0;
         }
 
         [DataMember(Order = 1)]
         public ExampleId Id { get; set; }
+
+        [DataMember(Order = 2)]
+        public long ExpectedVersion { get; set; }
     }
 }

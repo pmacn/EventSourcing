@@ -5,8 +5,16 @@ using System.Text;
 
 namespace EventSourcing
 {
+    /// <summary>
+    /// Abstract base class for value objects, implement GetDefiningValues
+    /// to return a collection of all values that matter for instance equality
+    /// </summary>
     public abstract class ValueObject : IEquatable<ValueObject>
     {
+        /// <summary>
+        /// Gets all the values that define the <see cref="ValueObject"/>
+        /// </summary>
+        /// <returns></returns>
         protected abstract IEnumerable<object> GetDefiningValues();
 
         public override bool Equals(object obj)

@@ -9,16 +9,15 @@ namespace EventSourcing.Example
 {
     public class ExampleApplicationService : ApplicationService<ExampleId>
     {
-        private readonly IEventStore _store;
+        private readonly Repository _repository;
 
-        public ExampleApplicationService(IEventStore store) { _store = store; }
+        public ExampleApplicationService(Repository repository) { _repository = repository; }
 
-        public void When(OpenExample c) { Update(c.Id, e => e.Open(c.Id)); }
+        public void When(OpenExample c) { Update(c.Id, c.ExpectedVersion, e => e.Open(c.Id)); }
 
-        private void Update(ExampleId aggregateId, Action<ExampleAggregate> updateAction)
+        private void Update(ExampleId aggregateId, long expectedVersion, Action<ExampleAggregate> updateAction)
         {
-            var stream = _store.GetEventStreamFor(aggregateId);
-            var agg = new ExampleAggregate(stream.Events);
+            var agg = _repository.GetById<ExampleAggregate>(aggregateId);
             try
             {
                 updateAction(agg);
@@ -28,7 +27,7 @@ namespace EventSourcing.Example
                 // handle the error here
             }
 
-            _store.AppendEventsToStream(aggregateId, stream.StreamVersion, agg.UncommittedEvents);
+            _repository.Save(agg, expectedVersion);
         }
     }
 }

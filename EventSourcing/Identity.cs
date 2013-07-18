@@ -1,10 +1,10 @@
 ﻿using System;
 
+// Credit for IIdentity and AbstractIdentity goes to Being The Worst, www.beingtheworst.com
+
+
 namespace EventSourcing
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public interface IIdentity
     {
         /// <summary>
