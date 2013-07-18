@@ -48,11 +48,9 @@
     <Compile Include="ApplicationService.cs" />
     <Compile Include="DomainError.cs" />
     <Compile Include="Exceptions\AggregateConcurrencyException.cs" />
-    <Compile Include="Exceptions\EventCreationException.cs" />
     <Compile Include="EventStore.cs" />
     <Compile Include="Identity.cs" />
     <Compile Include="Messages.cs" />
-    <Compile Include="Exceptions\SerializerNotRegisteredException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

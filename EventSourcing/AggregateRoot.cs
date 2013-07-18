@@ -1,5 +1,5 @@
 ﻿
-namespace ELI.EventSourcing
+namespace EventSourcing
 {
     using System;
     using System.Collections.Generic;

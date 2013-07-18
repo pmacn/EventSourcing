@@ -4,7 +4,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 
-namespace ELI.EventSourcing
+namespace EventSourcing
 {
     public interface IAggregateState<TIdentity>
     where TIdentity : IIdentity

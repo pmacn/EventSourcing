@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
-namespace ELI.EventSourcing
+namespace EventSourcing
 {
     /// <summary>
     /// Should really just be using this as a wrapper around geteventstore.com
@@ -39,7 +39,7 @@ namespace ELI.EventSourcing
             var stream = _store.GetEventStreamFor(aggregateId);
             var ctor = typeof(TAggregate).GetConstructor(new [] { typeof(IEnumerable<IEvent>) });
             if(ctor == null)
-                throw new AggregateConstructionException();
+                throw new AggregateConstructionException(String.Format("Unable to find constructor that takes a history of events for type {0}", typeof(TAggregate).Name);
 
             return (TAggregate)ctor.Invoke(new [] { stream.Events });
         }
@@ -54,7 +54,15 @@ namespace ELI.EventSourcing
         }
     }
 
-    public class AggregateConstructionException : System.Exception
+    [Serializable]
+    public class AggregateConstructionException : Exception
     {
+        public AggregateConstructionException() { }
+        public AggregateConstructionException(string message) : base(message) { }
+        public AggregateConstructionException(string message, Exception inner) : base(message, inner) { }
+        protected AggregateConstructionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context)
+            : base(info, context) { }
     }
 }

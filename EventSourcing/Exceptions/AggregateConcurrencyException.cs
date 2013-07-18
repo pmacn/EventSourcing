@@ -1,4 +1,4 @@
-namespace ELI.EventSourcing
+namespace EventSourcing
 {
     using System;
     using System.Runtime.Serialization;

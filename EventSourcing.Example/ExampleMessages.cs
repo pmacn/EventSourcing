@@ -1,4 +1,4 @@
-﻿using ELI.EventSourcing;
+﻿using EventSourcing;
 using System;
 using System.Collections.Generic;
 using System.Linq;

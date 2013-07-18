@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace ELI.EventSourcing
+namespace EventSourcing
 {
     // Credit goes to BTW podcast at www.beingtheworst.com
     [Serializable]

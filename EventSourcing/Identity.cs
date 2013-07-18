@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ELI.EventSourcing
+namespace EventSourcing
 {
     /// <summary>
     /// 
