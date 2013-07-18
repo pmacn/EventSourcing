@@ -40,9 +40,9 @@ namespace EventSourcing
             return true;
         }
 
-        // TODO: This hash algoritm is probably not good enough for ValueObject
         public override int GetHashCode()
         {
+            // TODO: This hash algoritm is probably not good enough for ValueObject
             var values = GetDefiningValues();
             int hash = 23;
             unchecked

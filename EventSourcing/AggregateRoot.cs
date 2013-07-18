@@ -21,34 +21,21 @@ namespace EventSourcing
         TIdentity Id { get; }
     }
 
-    public interface IUncommittedEvents : IEnumerable<IEvent>
-    {
-        void MarkAsCommitted();
-    }
 
-    // It does feel a little icky to have two type parameters on this
-    // Another option would be to leave the class slightly more open
-    // and with some more abstract properties/methods, maybe something
-    // that could be templated.
-    // That would also leave the aggregateroot more open to use a
-    // separate state class or not
-    public abstract class AggregateRoot<TIdentity, TState> : IAggregateRoot<TIdentity>
+    /// <summary>
+    /// A generic aggregate root with wiring to apply events and keep uncommitted events
+    /// </summary>
+    /// <typeparam name="TIdentity"></typeparam>
+    public abstract class AggregateRoot<TIdentity> : IAggregateRoot<TIdentity>
         where TIdentity : IIdentity
-        where TState : IAggregateState<TIdentity>
     {
         private readonly UncommittedEvents _uncommittedEvents = new UncommittedEvents();
 
-        public AggregateRoot(TState state)
-        {
-            Contract.Requires(State != null, "state cannot be null");
-            State = state;
-        }
+        protected abstract IAggregateState<TIdentity> GenericState { get; }
 
-        protected TState State { get; private set; }
+        public TIdentity Id { get { return GenericState.Id; } }
 
-        public TIdentity Id { get { return State.Id; } }
-
-        public long Version { get { return State.Version; } }
+        public long Version { get { return GenericState.Version; } }
 
         public IUncommittedEvents UncommittedEvents { get { return _uncommittedEvents; } }
 
@@ -60,11 +47,16 @@ namespace EventSourcing
 
         private void ApplyChange(IEvent eventToApply, bool isNew)
         {
-            Contract.Requires(State != null, "State cannot be null");
-            State.ApplyChange(eventToApply);
+            Contract.Requires(GenericState != null, "State cannot be null");
+            GenericState.ApplyChange(eventToApply);
             if (isNew)
                 _uncommittedEvents.Append(eventToApply);
         }
+    }
+
+    public interface IUncommittedEvents : IEnumerable<IEvent>
+    {
+        void MarkAsCommitted();
     }
 
     internal class UncommittedEvents : IUncommittedEvents
