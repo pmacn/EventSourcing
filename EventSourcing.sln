@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing", "EventSourcing\EventSourcing.csproj", "{712A91CD-01C1-4FCC-A7E7-44A4586C21F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Example", "EventSourcing.Example\EventSourcing.Example.csproj", "{2F072D89-603C-43BC-8CF7-62E32D93CD94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{712A91CD-01C1-4FCC-A7E7-44A4586C21F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{712A91CD-01C1-4FCC-A7E7-44A4586C21F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{712A91CD-01C1-4FCC-A7E7-44A4586C21F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F072D89-603C-43BC-8CF7-62E32D93CD94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F072D89-603C-43BC-8CF7-62E32D93CD94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F072D89-603C-43BC-8CF7-62E32D93CD94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F072D89-603C-43BC-8CF7-62E32D93CD94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

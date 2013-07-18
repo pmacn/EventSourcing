@@ -6,6 +6,7 @@ using System.Text;
 
 namespace ELI.EventSourcing
 {
+    // Credit goes to BTW podcast at www.beingtheworst.com
     [Serializable]
     public class DomainError : Exception
     {
