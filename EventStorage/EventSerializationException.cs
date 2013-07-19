@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ELI.EventStore
+namespace EventStorage
 {
     [Serializable]
     public class EventSerializationException : Exception

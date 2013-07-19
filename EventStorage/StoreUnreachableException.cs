@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
-namespace ELI.EventStore
+namespace EventStorage
 {
     [Serializable]
     public class StoreUnreachableException : Exception

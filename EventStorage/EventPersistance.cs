@@ -8,7 +8,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
-namespace ELI.EventStore
+namespace EventStorage
 {
     public interface IEventPersistance
     {
