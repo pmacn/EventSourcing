@@ -45,7 +45,7 @@ namespace EventSourcing
 
         private void ApplyChange(IEvent eventToApply, bool isNew)
         {
-            Contract.Requires(GenericState != null, "State cannot be null");
+            Contract.Requires(GenericState != null, "state cannot be null");
             GenericState.ApplyChange(eventToApply);
             if (isNew)
                 _uncommittedEvents.Append(eventToApply);
@@ -63,7 +63,7 @@ namespace EventSourcing
 
         public void Append(IEvent eventToAdd)
         {
-            Contract.Requires(eventToAdd != null, "eventToAdd cannot be null");
+            Contract.Requires<ArgumentNullException>(eventToAdd != null, "eventToAdd cannot be null");
             _events.Add(eventToAdd);
         }
 

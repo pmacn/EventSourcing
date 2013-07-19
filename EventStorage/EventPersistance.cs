@@ -10,6 +10,7 @@ using System.Linq;
 
 namespace EventStorage
 {
+    [ContractClass(typeof(IEventPersistanceContract))]
     public interface IEventPersistance
     {
         void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend);
@@ -19,6 +20,27 @@ namespace EventStorage
 
         [Pure]
         long GetVersionFor(IIdentity aggregateId);
+    }
+
+    [ContractClassFor(typeof(IEventPersistance))]
+    public abstract class IEventPersistanceContract : IEventPersistance
+    {
+        [Pure]
+        public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
+        {
+            
+        }
+
+        [Pure]
+        public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long GetVersionFor(IIdentity aggregateId)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class InMemoryEventPersistance : IEventPersistance
@@ -146,7 +168,7 @@ namespace EventStorage
         }
 
         [ContractInvariantMethod]
-        private void ObjectInvariant()
+        private void InvariantMethod()
         {
             Contract.Invariant(!String.IsNullOrWhiteSpace(_connectionString), "_connectionString cannot be null, empty or whitespace");
             Contract.Invariant(_serializer != null, "_serializer cannot be null");

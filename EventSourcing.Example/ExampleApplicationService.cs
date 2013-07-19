@@ -8,9 +8,9 @@ namespace EventSourcing.Example
 
         public ExampleApplicationService(Repository repository) { _repository = repository; }
 
-        public void When(OpenExample c) { Update(c.Id, c.ExpectedVersion, e => e.Open(c.Id)); }
+        public void When(OpenExample c) { Update(c.Id, e => e.Open(c.Id)); }
 
-        private void Update(ExampleId aggregateId, long expectedVersion, Action<ExampleAggregate> updateAction)
+        private void Update(ExampleId aggregateId, Action<ExampleAggregate> updateAction)
         {
             var agg = _repository.GetById<ExampleAggregate>(aggregateId);
             try
@@ -22,7 +22,7 @@ namespace EventSourcing.Example
                 // handle the error here
             }
 
-            _repository.Save(agg, expectedVersion);
+            _repository.Save(agg);
         }
     }
 }

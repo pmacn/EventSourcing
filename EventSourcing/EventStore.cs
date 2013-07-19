@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
@@ -46,12 +47,12 @@ namespace EventSourcing
             return (TAggregate)ctor.Invoke(new [] { stream.Events });
         }
 
-        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate, long expectedVersion)
+        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
             where TIdentity : IIdentity
         {
             Contract.Requires<ArgumentNullException>(aggregate != null, "aggregate cannot be null");
-            Contract.Requires<ArgumentOutOfRangeException>(expectedVersion >= 0, "expectedVersion cannot be negative");
 
+            var expectedVersion = aggregate.Version - aggregate.UncommittedEvents.Count();
             _store.AppendEventsToStream(aggregate.Id, expectedVersion, aggregate.UncommittedEvents);
         }
     }

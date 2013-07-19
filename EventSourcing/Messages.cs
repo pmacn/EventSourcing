@@ -8,7 +8,9 @@ namespace EventSourcing
     /// <summary>
     /// An event that happened in the domain
     /// </summary>
-    public interface IEvent { }
+    public interface IEvent
+    {
+    }
 
     /// <summary>
     /// An <see cref="IEvent"/> that happened to an aggregate with an Id
@@ -28,10 +30,6 @@ namespace EventSourcing
     /// </summary>
     public interface ICommand
     {
-        /// <summary>
-        /// Expected version of the aggregate that will handle the command
-        /// </summary>
-        long ExpectedVersion { get; set; }
     }
 
     /// <summary>
@@ -50,6 +48,5 @@ namespace EventSourcing
 
     public class ApplicationServiceHost
     {
-        
     }
 }

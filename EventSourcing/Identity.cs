@@ -10,18 +10,21 @@ namespace EventSourcing
         /// Gets the id, converted to a string. Only alphanumerics and '-' are allowed.
         /// </summary>
         /// <returns></returns>
+        [Pure]
         string GetId();
 
         /// <summary>
         /// Unique tag (should be unique within the assembly) to distinguish
         /// between different identities, while deserializing.
         /// </summary>
+        [Pure]
         string GetTag();
         /// <summary>
         /// Provides consistent hashing, which will not be affected by platforms or different
         /// versions of .NET Framework
         /// </summary>
         /// <returns></returns>
+        [Pure]
         int GetConsistentHashCode();
     }
 
@@ -54,13 +57,11 @@ namespace EventSourcing
 
         #region Methods
 
-        [Pure]
         public string GetId()
         {
             return Id.ToString();
         }
 
-        [Pure]
         public abstract string GetTag();
 
         [Pure]
@@ -91,7 +92,6 @@ namespace EventSourcing
             return (Id.GetHashCode());
         }
 
-        [Pure]
         public int GetConsistentHashCode()
         {
             // same as hash code, but works across multiple architectures 
@@ -103,8 +103,7 @@ namespace EventSourcing
             return Id.GetHashCode();
         }
 
-        [Pure]
-        static int CalculateStringHash(string value)
+        private static int CalculateStringHash(string value)
         {
             if (value == null) return 42;
             unchecked

@@ -3,18 +3,23 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using EventStore.ClientAPI;
+using System.Net;
 
 namespace EventStorage
 {
-    public class EventStore : IEventStore
+    public class MyEventStore : IEventStore
     {
         private readonly IEventPersistance _persistance;
+        private readonly IEventPublisher _publisher;
 
-        public EventStore(IEventPersistance persistance)
+        public MyEventStore(IEventPersistance persistance, IEventPublisher publisher)
         {
             Contract.Requires<ArgumentNullException>(persistance != null, "persistance cannot be null");
+            Contract.Requires<ArgumentNullException>(publisher != null, "publisher cannot be null");
 
             _persistance = persistance;
+            _publisher = publisher;
         }
 
         public EventStream GetEventStreamFor(IIdentity aggregateId)
@@ -29,6 +34,7 @@ namespace EventStorage
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             Contract.Requires<ArgumentNullException>(eventsToAppend != null, "eventsToAppend cannot be null");
+            Contract.Requires(Contract.ForAll(eventsToAppend, e => e != null), "none of the events in eventsToAppend can be null");
 
             if(!eventsToAppend.Any())
                 return;
@@ -38,6 +44,49 @@ namespace EventStorage
                 throw new AggregateConcurrencyException(expectedVersion, actualVersion);
 
             _persistance.AppendEvents(aggregateId, eventsToAppend);
+            _publisher.Publish(eventsToAppend);
+        }
+    }
+
+    public class OtherEventStore : IEventStore
+    {
+        private readonly IEventStoreConnection _connection;
+        Func<IIdentity, string> _streamNameFactory;
+        IEventSerializer _serializer;
+
+        public OtherEventStore()
+        {
+            _connection = EventStoreConnection.Create(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8181), "myConnection");
+            _streamNameFactory = id => String.Concat(id.GetTag(), id.GetId());
+        }
+
+        public EventStream GetEventStreamFor(IIdentity aggregateId)
+        {
+            var streamName = _streamNameFactory(aggregateId);
+            var slice = _connection.ReadStreamEventsForward(streamName, 0, int.MaxValue, false);
+            if(slice.Status == SliceReadStatus.StreamNotFound)
+                return new EventStream
+                {
+                    Events = new List<IEvent>(),
+                    StreamVersion = 0
+                };
+
+            return new EventStream
+            {
+                Events = slice.Events.Select(e => _serializer.Deserialize(e.OriginalEvent.Data)),
+                StreamVersion = slice.LastEventNumber
+            };
+        }
+
+        public void AppendEventsToStream(IIdentity aggregateId, long expectedVersion, IEnumerable<IEvent> eventsToAppend)
+        {
+            var streamName = _streamNameFactory(aggregateId);
+            _connection.AppendToStream(streamName, (int)expectedVersion, eventsToAppend.Select(CreateEventData));
+        }
+
+        private EventData CreateEventData(IEvent arg)
+        {
+            return new EventData(Guid.NewGuid(), arg.GetType().Name, false, _serializer.Serialize(arg), )
         }
     }
 }

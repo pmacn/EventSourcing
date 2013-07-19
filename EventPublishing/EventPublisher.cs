@@ -14,16 +14,20 @@ namespace EventPublishing
 
         public EventPublisher(IServiceBus bus)
         {
-            Contract.Requires(bus != null, "bus cannot be null");
+            Contract.Requires<ArgumentNullException>(bus != null, "bus cannot be null");
             _bus = bus;
         }
 
         public void Publish<TEvent>(TEvent eventToPublish)
-            where TEvent : IEvent
+            where TEvent : class, IEvent
         {
-            Contract.Requires(eventToPublish != null, "eventToPublish cannot be null");
+            _bus.Publish(eventToPublish);
+        }
 
-            _bus.Publish((dynamic)eventToPublish);
+        public void Publish<TEvent>(IEnumerable<TEvent> eventsToPublish) where TEvent : class, IEvent
+        {
+            foreach(var e in eventsToPublish)
+                _bus.Publish(e);
         }
     }
 }
