@@ -50,6 +50,7 @@
     <Compile Include="Exceptions\AggregateConcurrencyException.cs" />
     <Compile Include="EventStore.cs" />
     <Compile Include="Identity.cs" />
+    <Compile Include="IEventPublisher.cs" />
     <Compile Include="Messages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ValueObject.cs" />

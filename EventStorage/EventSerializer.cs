@@ -16,6 +16,7 @@ namespace EventStorage
 
     public class BinaryEventSerializer : IEventSerializer
     {
+        [Pure]
         public byte[] Serialize(IEvent eventToSerialize)
         {
             Contract.Requires<ArgumentNullException>(eventToSerialize != null, "eventToSerialize cannot be null");
@@ -25,10 +26,11 @@ namespace EventStorage
             }
             catch (SerializationException ex)
             {
-                throw new EventSerializationException("Unable to serialize event", ex);
+                throw new EventSerializationException(String.Format("Unable to serialize event of type [{0}]", eventToSerialize.GetType().FullName), ex);
             }
         }
 
+        [Pure]
         private static byte[] SerializeImpl(IEvent eventToSerialize)
         {
             using (var stream = new MemoryStream())
@@ -38,6 +40,7 @@ namespace EventStorage
             }
         }
 
+        [Pure]
         public IEvent Deserialize(byte[] serializedEvent)
         {
             Contract.Requires<ArgumentNullException>(serializedEvent != null, "serializedEvent cannot be null");
@@ -50,9 +53,9 @@ namespace EventStorage
             {
                 throw new EventSerializationException("Unable to deserialize event", ex);
             }
-
         }
 
+        [Pure]
         private IEvent DeserializeImpl(byte[] serializedEvent)
         {
             using (var stream = new MemoryStream(serializedEvent))
