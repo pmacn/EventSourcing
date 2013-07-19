@@ -6,6 +6,11 @@ namespace EventSourcing.Example
 {
     public class ExampleId : AbstractIdentity<int>
     {
+        public ExampleId(int id)
+        {
+            Id = id;
+        }
+
         public override int Id { get; protected set; }
 
         public override string GetTag() { return "Example"; }
@@ -16,7 +21,11 @@ namespace EventSourcing.Example
         public ExampleState(IEnumerable<IEvent> history)
             : base(history) { }
 
-        public void When(ExampleOpened e) { Id = e.Id; }
+        public void When(ExampleOpened e)
+        {
+            Contract.Requires(e != null, "event cannot be null");
+            Id = e.Id;
+        }
     }
 
     public class ExampleAggregate : AggregateRoot<ExampleId>

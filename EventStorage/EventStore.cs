@@ -12,6 +12,8 @@ namespace EventStorage
 
         public EventStore(IEventPersistance persistance)
         {
+            Contract.Requires<ArgumentNullException>(persistance != null, "persistance cannot be null");
+
             _persistance = persistance;
         }
 

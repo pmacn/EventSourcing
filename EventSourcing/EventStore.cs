@@ -10,6 +10,7 @@ namespace EventSourcing
     /// </summary>
     public interface IEventStore
     {
+        [Pure]
         EventStream GetEventStreamFor(IIdentity aggregateId);
         void AppendEventsToStream(IIdentity aggregateId, long expectedVersion, IEnumerable<IEvent> eventsToAppend);
     }
@@ -31,6 +32,7 @@ namespace EventSourcing
             _store = store;
         }
 
+        [Pure]
         public TAggregate GetById<TAggregate>(IIdentity aggregateId)
             where TAggregate : IAggregateRoot
         {

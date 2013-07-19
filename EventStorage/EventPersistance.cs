@@ -144,6 +144,13 @@ namespace EventStorage
                 }
             }
         }
+
+        [ContractInvariantMethod]
+        private void ObjectInvariant()
+        {
+            Contract.Invariant(!String.IsNullOrWhiteSpace(_connectionString), "_connectionString cannot be null, empty or whitespace");
+            Contract.Invariant(_serializer != null, "_serializer cannot be null");
+        }
     }
 
     public class FileSystemEventPersistance : IEventPersistance
