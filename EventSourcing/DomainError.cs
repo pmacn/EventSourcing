@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace EventSourcing
 {
@@ -21,6 +19,8 @@ namespace EventSourcing
         /// <returns></returns>
         public static DomainError Named(string name, string format, params object[] args)
         {
+            Contract.Requires(!String.IsNullOrWhiteSpace(name));
+
             return new DomainError(string.Format(format, args))
             {
                 Name = name

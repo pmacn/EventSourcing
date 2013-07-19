@@ -2,11 +2,9 @@
 namespace EventSourcing
 {
     using System;
-    using System.Collections.Generic;
-    using System.Threading;
     using System.Collections;
+    using System.Collections.Generic;
     using System.Diagnostics.Contracts;
-    using System.Runtime.Serialization;
 
     public interface IAggregateRoot
     {
@@ -63,12 +61,18 @@ namespace EventSourcing
     {
         private List<IEvent> _events = new List<IEvent>();
 
-        public void Append(IEvent eventToAdd) { _events.Add(eventToAdd); }
+        public void Append(IEvent eventToAdd)
+        {
+            Contract.Requires(eventToAdd != null, "eventToAdd cannot be null");
+            _events.Add(eventToAdd);
+        }
 
         public void MarkAsCommitted() { _events.Clear(); }
 
+        [Pure]
         public IEnumerator<IEvent> GetEnumerator() { return _events.GetEnumerator(); }
 
+        [Pure]
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
     }
 }

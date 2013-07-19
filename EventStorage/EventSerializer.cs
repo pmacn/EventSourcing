@@ -25,7 +25,6 @@ namespace ELI.EventStore
         public byte[] Serialize(IEvent eventToSerialize)
         {
             Contract.Requires<ArgumentNullException>(eventToSerialize != null, "eventToSerialize cannot be null");
-
             try
             {
                 return SerializeImpl(eventToSerialize);

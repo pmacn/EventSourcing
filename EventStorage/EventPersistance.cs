@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
@@ -12,7 +13,11 @@ namespace ELI.EventStore
     public interface IEventPersistance
     {
         void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend);
+
+        [Pure]
         IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId);
+
+        [Pure]
         long GetVersionFor(IIdentity aggregateId);
     }
 
@@ -22,11 +27,13 @@ namespace ELI.EventStore
 
         public long GetVersionFor(IIdentity aggregateId)
         {
+            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
             return EventsFor(aggregateId).Count;
         }
 
         public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId)
         {
+            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
             return EventsFor(aggregateId).ToList();
         }
 
@@ -68,12 +75,17 @@ namespace ELI.EventStore
 
         public SqlEventPersistance(IEventSerializer serializer, string connectionString)
         {
+            Contract.Requires(serializer != null, "serializer cannot be null");
+            Contract.Requires(!String.IsNullOrWhiteSpace(connectionString), "connectionString cannot be null, empty or whitespace");
             _serializer = serializer;
             _connectionString = connectionString;
         }
 
         public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
+            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
+            Contract.Requires(eventsToAppend != null, "eventsToAppend cannot be null");
+
             using (var conn = new SqlConnection(_connectionString))
             {
                 using (var cmd = new SqlCommand(InsertEventsQuery, conn))
@@ -93,6 +105,8 @@ namespace ELI.EventStore
 
         public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId)
         {
+            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
+
             using (var conn = new SqlConnection(_connectionString))
             {
                 using (var cmd = new SqlCommand(SelectEventsQuery, conn))
@@ -117,6 +131,8 @@ namespace ELI.EventStore
 
         public long GetVersionFor(IIdentity aggregateId)
         {
+            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
+
             using (var conn = new SqlConnection(_connectionString))
             {
                 using (var cmd = new SqlCommand(CountEventsQuery, conn))
@@ -130,7 +146,7 @@ namespace ELI.EventStore
         }
     }
 
-    public class FilePersistance : IEventPersistance
+    public class FileSystemEventPersistance : IEventPersistance
     {
         #region Fields
 
@@ -144,7 +160,7 @@ namespace ELI.EventStore
 
         #region Constructors
 
-        public FilePersistance(IEventSerializer serializer, string storagePath)
+        public FileSystemEventPersistance(IEventSerializer serializer, string storagePath)
         {
             _serializer = serializer;
             _storagePath = storagePath;
