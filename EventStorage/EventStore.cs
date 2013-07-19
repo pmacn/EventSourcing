@@ -1,14 +1,8 @@
 ﻿using EventSourcing;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace EventStorage
 {

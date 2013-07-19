@@ -1,8 +1,7 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 
 // Credit for IIdentity and AbstractIdentity goes to Being The Worst, www.beingtheworst.com
-
-
 namespace EventSourcing
 {
     public interface IIdentity
@@ -55,13 +54,16 @@ namespace EventSourcing
 
         #region Methods
 
+        [Pure]
         public string GetId()
         {
             return Id.ToString();
         }
 
+        [Pure]
         public abstract string GetTag();
 
+        [Pure]
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -77,16 +79,19 @@ namespace EventSourcing
             return false;
         }
 
+        [Pure]
         public override string ToString()
         {
             return string.Format("{0}-{1}", GetType().Name.Replace("Id", ""), Id);
         }
 
+        [Pure]
         public override int GetHashCode()
         {
             return (Id.GetHashCode());
         }
 
+        [Pure]
         public int GetConsistentHashCode()
         {
             // same as hash code, but works across multiple architectures 
@@ -98,6 +103,7 @@ namespace EventSourcing
             return Id.GetHashCode();
         }
 
+        [Pure]
         static int CalculateStringHash(string value)
         {
             if (value == null) return 42;
@@ -112,6 +118,7 @@ namespace EventSourcing
             }
         }
 
+        [Pure]
         public bool Equals(AbstractIdentity<TKey> other)
         {
             if (other != null)
@@ -126,11 +133,13 @@ namespace EventSourcing
 
         #region Operators
 
+        [Pure]
         public static bool operator ==(AbstractIdentity<TKey> left, AbstractIdentity<TKey> right)
         {
             return Equals(left, right);
         }
 
+        [Pure]
         public static bool operator !=(AbstractIdentity<TKey> left, AbstractIdentity<TKey> right)
         {
             return !Equals(left, right);

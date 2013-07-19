@@ -29,6 +29,9 @@ namespace EventSourcing.Example
 
         public void Open(ExampleId id)
         {
+            if (id == null)
+                throw DomainError.Named("invalid-aggregate-id", "null is not a valid id for Example");
+
             if (State.Id != null)
                 throw DomainError.Named("example-already-opened", "");
             ApplyChange(new ExampleOpened(id, DateTime.Now));

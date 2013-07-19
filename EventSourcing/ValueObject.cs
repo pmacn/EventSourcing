@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 
@@ -15,8 +16,10 @@ namespace EventSourcing
         /// Gets all the values that define the <see cref="ValueObject"/>
         /// </summary>
         /// <returns></returns>
+        [Pure]
         protected abstract IEnumerable<object> GetDefiningValues();
 
+        [Pure]
         public override bool Equals(object obj)
         {
             if (Object.ReferenceEquals(obj, null)) return false;
@@ -24,6 +27,7 @@ namespace EventSourcing
             return Equals(obj as ValueObject);
         }
 
+        [Pure]
         public bool Equals(ValueObject other)
         {
             if(other == null)
@@ -40,6 +44,7 @@ namespace EventSourcing
             return true;
         }
 
+        [Pure]
         public override int GetHashCode()
         {
             // TODO: This hash algoritm is probably not good enough for ValueObject
@@ -56,11 +61,13 @@ namespace EventSourcing
             return hash;
         }
 
+        [Pure]
         public static bool operator ==(ValueObject left, ValueObject right)
         {
             return Equals(left, right);
         }
 
+        [Pure]
         public static bool operator !=(ValueObject left, ValueObject right)
         {
             return !Equals(left, right);
