@@ -7,7 +7,7 @@ namespace EventSourcing
 {
     /// <summary>
     /// Should really just be using this as a wrapper around geteventstore.com
-    /// But have a few original implementations anyway, just for fun.
+    /// But have a few simple implementations anyway, just for fun.
     /// </summary>
     public interface IEventStore
     {
@@ -22,23 +22,49 @@ namespace EventSourcing
         public IEnumerable<IEvent> Events;
     }
 
-    public class Repository
+    [ContractClass(typeof(IRepositoryContract))]
+    public interface IRepository
+    {
+        [Pure]
+        TAggregate GetById<TAggregate>(IIdentity aggregateId)
+            where TAggregate : IAggregateRoot;
+
+        void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
+            where TIdentity : IIdentity;
+    }
+
+    [ContractClassFor(typeof(IRepository))]
+    abstract class IRepositoryContract : IRepository
+    {
+        public TAggregate GetById<TAggregate>(IIdentity aggregateId) where TAggregate : IAggregateRoot
+        {
+            Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
+            Contract.Ensures(Contract.Result<TAggregate>() != null, "GetById cannot return null");
+            throw new NotImplementedException();
+        }
+
+        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate) where TIdentity : IIdentity
+        {
+            Contract.Requires<ArgumentNullException>(aggregate != null, "aggregate cannot be null");
+            Contract.Requires<ArgumentException>(aggregate.UncommittedEvents != null, "aggregate.UncommittedEvents cannot be null");
+            throw new NotImplementedException();
+        }
+    }
+
+    public class Repository : IRepository
     {
         private readonly IEventStore _store;
 
         public Repository(IEventStore store)
         {
-            Contract.Requires(store != null, "store cannot be null");
+            Contract.Requires<ArgumentNullException>(store != null, "store cannot be null");
 
             _store = store;
         }
 
-        [Pure]
         public TAggregate GetById<TAggregate>(IIdentity aggregateId)
             where TAggregate : IAggregateRoot
         {
-            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
-
             var stream = _store.GetEventStreamFor(aggregateId);
             var ctor = typeof(TAggregate).GetConstructor(new [] { typeof(IEnumerable<IEvent>) });
             if(ctor == null)
@@ -50,8 +76,6 @@ namespace EventSourcing
         public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
             where TIdentity : IIdentity
         {
-            Contract.Requires<ArgumentNullException>(aggregate != null, "aggregate cannot be null");
-
             var expectedVersion = aggregate.Version - aggregate.UncommittedEvents.Count();
             _store.AppendEventsToStream(aggregate.Id, expectedVersion, aggregate.UncommittedEvents);
         }

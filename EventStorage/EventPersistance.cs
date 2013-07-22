@@ -23,22 +23,26 @@ namespace EventStorage
     }
 
     [ContractClassFor(typeof(IEventPersistance))]
-    public abstract class IEventPersistanceContract : IEventPersistance
+    abstract class IEventPersistanceContract : IEventPersistance
     {
-        [Pure]
         public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
-            
+            Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
+            Contract.Requires<ArgumentNullException>(eventsToAppend != null, "eventsToAppend cannot be null");
+            Contract.Requires(Contract.ForAll(eventsToAppend, e => e != null), "none of the events in eventsToAppend can be null");
         }
 
         [Pure]
         public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId)
         {
+            Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             throw new NotImplementedException();
         }
 
+        [Pure]
         public long GetVersionFor(IIdentity aggregateId)
         {
+            Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             throw new NotImplementedException();
         }
     }
