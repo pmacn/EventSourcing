@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("EventSourcing")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Energy Laboratories Inc.")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("EventSourcing")]
-[assembly: AssemblyCopyright("Copyright © Energy Laboratories Inc. 2012")]
+[assembly: AssemblyCopyright("Copyright © Peter MacNaughton 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
