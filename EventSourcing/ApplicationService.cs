@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace EventSourcing
+﻿namespace EventSourcing
 {
     public interface IApplicationService<TIdentity>
         where TIdentity : IIdentity
