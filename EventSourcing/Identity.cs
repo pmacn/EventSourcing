@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace EventSourcing
 {
@@ -93,13 +94,8 @@ namespace EventSourcing
 
         public int GetConsistentHashCode()
         {
-            // same as hash code, but works across multiple architectures 
             var type = typeof(TKey);
-            if (type == typeof(string))
-            {
-                return CalculateStringHash(Id.ToString());
-            }
-            return Id.GetHashCode();
+            return type == typeof(string) ? CalculateStringHash(Id.ToString()) : Id.GetHashCode();
         }
 
         private static int CalculateStringHash(string value)
@@ -107,12 +103,7 @@ namespace EventSourcing
             if (value == null) return 42;
             unchecked
             {
-                var hash = 23;
-                foreach (var c in value)
-                {
-                    hash = hash * 31 + c;
-                }
-                return hash;
+                return value.Aggregate(23, (current, c) => current*31 + c);
             }
         }
 
