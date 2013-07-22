@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
 
 namespace EventSourcing
 {
@@ -12,7 +9,7 @@ namespace EventSourcing
         void Publish<TEvent>(TEvent eventToPublish)
             where TEvent : class, IEvent;
 
-        void Publish<TEvent>(IEnumerable<TEvent> eventsToPublish)
+        void Publish<TEvent>(TEvent[] eventsToPublish)
             where TEvent : class, IEvent;
     }
 
@@ -21,13 +18,13 @@ namespace EventSourcing
     {
         void IEventPublisher.Publish<TEvent>(TEvent eventToPublish)
         {
-            Contract.Requires(eventToPublish != null, "eventToPublish cannot be null");
+            Contract.Requires<ArgumentNullException>(eventToPublish != null, "eventToPublish cannot be null");
         }
 
-        void IEventPublisher.Publish<TEvent>(IEnumerable<TEvent> eventsToPublish)
+        void IEventPublisher.Publish<TEvent>(TEvent[] eventsToPublish)
         {
-            Contract.Requires(eventsToPublish != null, "eventsToPublish cannot be null");
-            Contract.Requires(Contract.ForAll(eventsToPublish, e => e != null), "none of the events in eventsToPublish can be null");
+            Contract.Requires<ArgumentNullException>(eventsToPublish != null, "eventsToPublish cannot be null");
+            Contract.Requires<ArgumentException>(Contract.ForAll(eventsToPublish, e => e != null), "none of the events in eventsToPublish can be null");
         }
     }
 }

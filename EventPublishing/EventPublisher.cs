@@ -24,7 +24,7 @@ namespace EventPublishing
             _bus.Publish(eventToPublish);
         }
 
-        public void Publish<TEvent>(IEnumerable<TEvent> eventsToPublish) where TEvent : class, IEvent
+        public void Publish<TEvent>(TEvent[] eventsToPublish) where TEvent : class, IEvent
         {
             foreach(var e in eventsToPublish)
                 _bus.Publish(e);

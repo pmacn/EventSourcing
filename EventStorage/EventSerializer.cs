@@ -56,7 +56,7 @@ namespace EventStorage
         }
 
         [Pure]
-        private IEvent DeserializeImpl(byte[] serializedEvent)
+        private static IEvent DeserializeImpl(byte[] serializedEvent)
         {
             using (var stream = new MemoryStream(serializedEvent))
             {

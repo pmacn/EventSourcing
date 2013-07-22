@@ -35,17 +35,18 @@ namespace EventStorage
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             Contract.Requires<ArgumentNullException>(eventsToAppend != null, "eventsToAppend cannot be null");
-            Contract.Requires(Contract.ForAll(eventsToAppend, e => e != null), "none of the events in eventsToAppend can be null");
+            var events = eventsToAppend as IEvent[] ?? eventsToAppend.ToArray();
+            Contract.Requires<ArgumentException>(Contract.ForAll(events, e => e != null), "none of the events in eventsToAppend can be null");
 
-            if(!eventsToAppend.Any())
+            if(!events.Any())
                 return;
 
             var actualVersion = _persistance.GetVersionFor(aggregateId);
             if(actualVersion != expectedVersion)
                 throw new AggregateConcurrencyException(expectedVersion, actualVersion);
 
-            _persistance.AppendEvents(aggregateId, eventsToAppend);
-            _publisher.Publish(eventsToAppend);
+            _persistance.AppendEvents(aggregateId, events);
+            _publisher.Publish(events);
         }
     }
 

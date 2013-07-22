@@ -45,7 +45,7 @@ namespace EventSourcing
 
         private void ApplyChange(IEvent eventToApply, bool isNew)
         {
-            Contract.Requires(GenericState != null, "state cannot be null");
+            Contract.Requires<InvalidOperationException>(GenericState != null, "state cannot be null");
             GenericState.ApplyChange(eventToApply);
             if (isNew)
                 _uncommittedEvents.Append(eventToApply);
@@ -59,7 +59,7 @@ namespace EventSourcing
 
     internal class UncommittedEvents : IUncommittedEvents
     {
-        private List<IEvent> _events = new List<IEvent>();
+        private readonly List<IEvent> _events = new List<IEvent>();
 
         public void Append(IEvent eventToAdd)
         {

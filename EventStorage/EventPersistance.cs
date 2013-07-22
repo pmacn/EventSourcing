@@ -29,7 +29,7 @@ namespace EventStorage
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             Contract.Requires<ArgumentNullException>(eventsToAppend != null, "eventsToAppend cannot be null");
-            Contract.Requires(Contract.ForAll(eventsToAppend, e => e != null), "none of the events in eventsToAppend can be null");
+            Contract.Requires<ArgumentException>(Contract.ForAll(eventsToAppend, e => e != null), "none of the events in eventsToAppend can be null");
         }
 
         [Pure]

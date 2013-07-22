@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 
 namespace EventSourcing
 {
-    // Credit goes to BTW podcast at www.beingtheworst.com
     [Serializable]
     public class DomainError : Exception
     {
@@ -19,7 +18,7 @@ namespace EventSourcing
         /// <returns></returns>
         public static DomainError Named(string name, string format, params object[] args)
         {
-            Contract.Requires(!String.IsNullOrWhiteSpace(name));
+            Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(name));
 
             return new DomainError(string.Format(format, args))
             {

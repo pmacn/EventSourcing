@@ -7,7 +7,7 @@ using System.Text;
 namespace EventSourcing
 {
     public interface IAggregateState<TIdentity>
-    where TIdentity : IIdentity
+        where TIdentity : IIdentity
     {
         TIdentity Id { get; set; }
 
@@ -19,7 +19,7 @@ namespace EventSourcing
     public abstract class AggregateState<TIdentity> : IAggregateState<TIdentity>
         where TIdentity : IIdentity
     {
-        public AggregateState(IEnumerable<IEvent> history)
+        protected AggregateState(IEnumerable<IEvent> history)
         {
             Contract.Requires<ArgumentNullException>(history != null, "history cannot be null");
 
@@ -33,6 +33,7 @@ namespace EventSourcing
 
         public void ApplyChange(IEvent eventToApply)
         {
+            Contract.Requires<ArgumentNullException>(eventToApply != null, "eventToApply cannot be null");
             Version++;
             ((dynamic)this).When((dynamic)eventToApply);
         }
