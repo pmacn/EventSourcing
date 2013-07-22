@@ -5,6 +5,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using EventStore.ClientAPI;
 using System.Net;
+using EventStore.ClientAPI.Exceptions;
 
 namespace EventStorage
 {
@@ -50,43 +51,67 @@ namespace EventStorage
 
     public class OtherEventStore : IEventStore
     {
-        private readonly IEventStoreConnection _connection;
-        Func<IIdentity, string> _streamNameFactory;
-        IEventSerializer _serializer;
+        private const int ReadSliceSize = 500;
 
-        public OtherEventStore()
+        private readonly IEventStoreConnection _connection;
+
+        private readonly IEventSerializer _serializer;
+
+        private static readonly Func<IIdentity, string> StreamNameFactory = id => String.Concat(id.GetTag(), id.GetId());
+
+        public OtherEventStore(string ipAddress, int port, IEventSerializer serializer)
         {
-            _connection = EventStoreConnection.Create(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8181), "myConnection");
-            _streamNameFactory = id => String.Concat(id.GetTag(), id.GetId());
+            var endPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
+            _connection = EventStoreConnection.Create(endPoint, "myConnection");
+            _serializer = serializer;
         }
 
         public EventStream GetEventStreamFor(IIdentity aggregateId)
         {
-            var streamName = _streamNameFactory(aggregateId);
-            var slice = _connection.ReadStreamEventsForward(streamName, 0, int.MaxValue, false);
-            if(slice.Status == SliceReadStatus.StreamNotFound)
-                return new EventStream
-                {
-                    Events = new List<IEvent>(),
-                    StreamVersion = 0
-                };
-
-            return new EventStream
+            var events = new List<IEvent>();
+            const int version = int.MaxValue;
+            var streamName = StreamNameFactory(aggregateId);
+            var sliceStart = 1;
+            var numberOfEventsToRead = Math.Min(ReadSliceSize, version - sliceStart + 1);
+            StreamEventsSlice currentSlice;
+            do
             {
-                Events = slice.Events.Select(e => _serializer.Deserialize(e.OriginalEvent.Data)),
-                StreamVersion = slice.LastEventNumber
-            };
+                currentSlice = _connection.ReadStreamEventsForward(streamName, sliceStart, numberOfEventsToRead, false);
+                if (currentSlice.Status == SliceReadStatus.StreamNotFound)
+                    return new EventStream { Events = new List<IEvent>(), StreamVersion = 0 };
+                if (currentSlice.Status == SliceReadStatus.StreamDeleted)
+                    throw new AggregateDeletedException();
+
+                events.AddRange(currentSlice.Events.Select(EventFromData));
+
+                sliceStart = currentSlice.NextEventNumber;
+            } while (version >= currentSlice.NextEventNumber && !currentSlice.IsEndOfStream);
+
+            return new EventStream { Events = events, StreamVersion = events.Count };
         }
 
         public void AppendEventsToStream(IIdentity aggregateId, long expectedVersion, IEnumerable<IEvent> eventsToAppend)
         {
-            var streamName = _streamNameFactory(aggregateId);
+            var streamName = StreamNameFactory(aggregateId);
             _connection.AppendToStream(streamName, (int)expectedVersion, eventsToAppend.Select(CreateEventData));
         }
 
-        private EventData CreateEventData(IEvent arg)
+        private EventData CreateEventData(IEvent e)
         {
-            return new EventData(Guid.NewGuid(), arg.GetType().Name, false, _serializer.Serialize(arg), )
+            return new EventData(Guid.NewGuid(), e.GetType().Name, false, _serializer.Serialize(e), null);
         }
+
+        private IEvent EventFromData(ResolvedEvent resolvedEvent)
+        {
+            return _serializer.Deserialize(resolvedEvent.OriginalEvent.Data);
+        }
+    }
+
+    public class AggregateVersionException : Exception
+    {
+    }
+
+    public class AggregateDeletedException : Exception
+    {
     }
 }
