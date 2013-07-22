@@ -58,7 +58,7 @@ namespace EventStorage
 
         private readonly IEventSerializer _serializer;
 
-        private static readonly Func<IIdentity, string> StreamNameFactory = id => String.Concat(id.GetTag(), id.GetId());
+        private static readonly Func<IIdentity, string> StreamNameFactory = id => id.ToString();
 
         public OtherEventStore(string ipAddress, int port, IEventSerializer serializer)
         {
