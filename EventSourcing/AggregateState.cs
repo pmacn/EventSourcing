@@ -6,6 +6,7 @@ using System.Text;
 
 namespace EventSourcing
 {
+    [ContractClass(typeof(IAggregateStateContract<>))]
     public interface IAggregateState<TIdentity>
         where TIdentity : IIdentity
     {
@@ -14,6 +15,46 @@ namespace EventSourcing
         long Version { get; set; }
 
         void ApplyChange(IEvent eventToApply);
+    }
+
+    [ContractClassFor(typeof(IAggregateState<>))]
+    internal abstract class IAggregateStateContract<TIdentity> : IAggregateState<TIdentity>
+        where TIdentity : IIdentity
+    {
+        public TIdentity Id
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public long Version
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public void ApplyChange(IEvent eventToApply)
+        {
+            Contract.Requires<ArgumentNullException>(eventToApply != null, "eventToApply cannot be null");
+        }
+
+        [ContractInvariantMethod]
+        private void InvariantMethod()
+        {
+            Contract.Invariant(Version >= 0, "Version cannot be negative");
+        }
     }
 
     public abstract class AggregateState<TIdentity> : IAggregateState<TIdentity>
@@ -33,7 +74,6 @@ namespace EventSourcing
 
         public void ApplyChange(IEvent eventToApply)
         {
-            Contract.Requires<ArgumentNullException>(eventToApply != null, "eventToApply cannot be null");
             Version++;
             ((dynamic)this).When((dynamic)eventToApply);
         }

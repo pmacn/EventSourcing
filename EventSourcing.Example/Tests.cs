@@ -1,0 +1,77 @@
+﻿using EventStorage;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+
+namespace EventSourcing.Example
+{
+    [TestFixture]
+    public class WithNewAggregate
+    {
+        private InMemoryCommandQueue _commandQueue;
+
+        private TestEventPublisher _eventPublisher;
+
+        private ApplicationService<ExampleId> _appService;
+
+        private DefaultApplicationServiceHost _serviceHost;
+
+        private TestDomainErrorRouter _errorRouter;
+
+        [SetUp]
+        public void TestSetup()
+        {
+            _eventPublisher = new TestEventPublisher();
+            var eventStore = new MyEventStore(new InMemoryEventPersistance(), _eventPublisher);
+            var repo = new Repository(eventStore);
+            _commandQueue = new InMemoryCommandQueue();
+            _errorRouter = new TestDomainErrorRouter();
+            _appService = new ExampleApplicationService(repo, _errorRouter);
+            _serviceHost = new DefaultApplicationServiceHost(_commandQueue);
+            _serviceHost.LoadService(_appService);
+            _serviceHost.Start();
+        }
+
+        [TearDown]
+        public void TestTeardown() { _serviceHost.Stop(); }
+
+        [Test]
+        public void EnqueingCommandWillPublishExpectedEvent()
+        {
+            var id = new ExampleId(1);
+            var cmd = new OpenExample(id);
+            _commandQueue.Enqueue(cmd);
+            Thread.Sleep(100); // Yay, threading hackery~
+            var e = _eventPublisher.PublishedEvents.FirstOrDefault();
+            Assert.IsInstanceOf(typeof(ExampleOpened), e);
+        }
+    }
+
+    public class TestEventPublisher : IEventPublisher
+    {
+        public List<IEvent> PublishedEvents = new List<IEvent>();
+
+        public void Publish<TEvent>(TEvent eventToPublish) where TEvent : class, IEvent
+        {
+            PublishedEvents.Add(eventToPublish);
+        }
+
+        public void Publish<TEvent>(TEvent[] eventsToPublish) where TEvent : class, IEvent
+        {
+            PublishedEvents.AddRange(eventsToPublish);
+        }
+    }
+
+    public class TestDomainErrorRouter : IDomainErrorRouter
+    {
+        public List<DomainError> RoutedErrors = new List<DomainError>();
+
+        public void Route(DomainError error)
+        {
+            RoutedErrors.Add(error);
+        }
+    }
+}

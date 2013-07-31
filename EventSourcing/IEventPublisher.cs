@@ -3,18 +3,32 @@ using System.Diagnostics.Contracts;
 
 namespace EventSourcing
 {
+    /// <summary>
+    /// Publishes <see cref="IEvent"/>s to
+    /// </summary>
     [ContractClass(typeof(EventPublisherContract))]
     public interface IEventPublisher
     {
+        /// <summary>
+        /// Publishes the provided event.
+        /// </summary>
+        /// <typeparam name="TEvent">Type of the event</typeparam>
+        /// <param name="eventToPublish">The event to publish</param>
         void Publish<TEvent>(TEvent eventToPublish)
             where TEvent : class, IEvent;
 
+        /// <summary>
+        /// Publishes the provided events.
+        /// </summary>
+        /// <typeparam name="TEvent">Type of the events</typeparam>
+        /// <param name="eventsToPublish">Events to publish.</param>
+        /// <exception cref="ArgumentNullException">If eventsToPublish or any of the events in eventsToPublish is null</exception>
         void Publish<TEvent>(TEvent[] eventsToPublish)
             where TEvent : class, IEvent;
     }
 
     [ContractClassFor(typeof(IEventPublisher))]
-    public abstract class EventPublisherContract : IEventPublisher
+    internal abstract class EventPublisherContract : IEventPublisher
     {
         void IEventPublisher.Publish<TEvent>(TEvent eventToPublish)
         {

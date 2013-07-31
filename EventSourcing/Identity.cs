@@ -4,28 +4,51 @@ using System.Linq;
 
 namespace EventSourcing
 {
+    [ContractClass(typeof(IIdentityContract))]
     public interface IIdentity
     {
         /// <summary>
         /// Gets the id, converted to a string. Only alphanumerics and '-' are allowed.
         /// </summary>
         /// <returns></returns>
-        [Pure]
         string GetId();
 
         /// <summary>
         /// Unique tag (should be unique within the assembly) to distinguish
         /// between different identities, while deserializing.
         /// </summary>
-        [Pure]
         string GetTag();
+
         /// <summary>
         /// Provides consistent hashing, which will not be affected by platforms or different
         /// versions of .NET Framework
         /// </summary>
         /// <returns></returns>
-        [Pure]
         int GetConsistentHashCode();
+    }
+
+    [ContractClassFor(typeof(IIdentity))]
+    internal abstract class IIdentityContract : IIdentity
+    {
+        [Pure]
+        public string GetId()
+        {
+            Contract.Ensures(String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        public string GetTag()
+        {
+            Contract.Ensures(String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        public int GetConsistentHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -64,7 +87,6 @@ namespace EventSourcing
 
         public abstract string GetTag();
 
-        [Pure]
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -80,13 +102,11 @@ namespace EventSourcing
             return false;
         }
 
-        [Pure]
         public override string ToString()
         {
             return string.Format("{0}-{1}", GetType().Name.Replace("Id", ""), Id);
         }
 
-        [Pure]
         public override int GetHashCode()
         {
             return (Id.GetHashCode());
@@ -107,7 +127,6 @@ namespace EventSourcing
             }
         }
 
-        [Pure]
         public bool Equals(AbstractIdentity<TKey> other)
         {
             if (other != null)

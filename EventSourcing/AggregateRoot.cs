@@ -19,7 +19,6 @@ namespace EventSourcing
         TIdentity Id { get; }
     }
 
-
     /// <summary>
     /// A generic aggregate root with wiring to apply events and keep uncommitted events
     /// </summary>
@@ -40,12 +39,13 @@ namespace EventSourcing
         protected void ApplyChange(IEvent eventToApply)
         {
             Contract.Requires<ArgumentNullException>(eventToApply != null, "eventToApply cannot be null");
+            Contract.Requires<InvalidOperationException>(GenericState != null, "state cannot be null");
+
             ApplyChange(eventToApply, true);
         }
 
         private void ApplyChange(IEvent eventToApply, bool isNew)
         {
-            Contract.Requires<InvalidOperationException>(GenericState != null, "state cannot be null");
             GenericState.ApplyChange(eventToApply);
             if (isNew)
                 _uncommittedEvents.Append(eventToApply);

@@ -46,7 +46,4 @@ namespace EventSourcing
         TIdentity Id { get; }
     }
 
-    public class ApplicationServiceHost
-    {
-    }
 }

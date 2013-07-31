@@ -15,15 +15,13 @@ namespace EventStorage
     {
         void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend);
 
-        [Pure]
         IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId);
 
-        [Pure]
         long GetVersionFor(IIdentity aggregateId);
     }
 
     [ContractClassFor(typeof(IEventPersistance))]
-    abstract class IEventPersistanceContract : IEventPersistance
+    internal abstract class IEventPersistanceContract : IEventPersistance
     {
         public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
@@ -53,13 +51,11 @@ namespace EventStorage
 
         public long GetVersionFor(IIdentity aggregateId)
         {
-            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
             return EventsFor(aggregateId).Count;
         }
 
         public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId)
         {
-            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
             return EventsFor(aggregateId).ToList();
         }
 
@@ -109,9 +105,6 @@ namespace EventStorage
 
         public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
-            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
-            Contract.Requires(eventsToAppend != null, "eventsToAppend cannot be null");
-
             using (var conn = new SqlConnection(_connectionString))
             {
                 using (var cmd = new SqlCommand(InsertEventsQuery, conn))
@@ -131,8 +124,6 @@ namespace EventStorage
 
         public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId)
         {
-            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
-
             using (var conn = new SqlConnection(_connectionString))
             {
                 using (var cmd = new SqlCommand(SelectEventsQuery, conn))
@@ -157,8 +148,6 @@ namespace EventStorage
 
         public long GetVersionFor(IIdentity aggregateId)
         {
-            Contract.Requires(aggregateId != null, "aggregateId cannot be null");
-
             using (var conn = new SqlConnection(_connectionString))
             {
                 using (var cmd = new SqlCommand(CountEventsQuery, conn))

@@ -1,17 +1,17 @@
 ﻿using EventSourcing;
+using EventStore.ClientAPI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using EventStore.ClientAPI;
 using System.Net;
-using EventStore.ClientAPI.Exceptions;
 
 namespace EventStorage
 {
     public class MyEventStore : IEventStore
     {
         private readonly IEventPersistance _persistance;
+
         private readonly IEventPublisher _publisher;
 
         public MyEventStore(IEventPersistance persistance, IEventPublisher publisher)
@@ -25,19 +25,13 @@ namespace EventStorage
 
         public EventStream GetEventStreamFor(IIdentity aggregateId)
         {
-            Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
-
             var events = _persistance.GetEventsFor(aggregateId);
             return new EventStream { StreamVersion = events.LongCount(), Events = events };
         }
 
         public void AppendEventsToStream(IIdentity aggregateId, long expectedVersion, IEnumerable<IEvent> eventsToAppend)
         {
-            Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
-            Contract.Requires<ArgumentNullException>(eventsToAppend != null, "eventsToAppend cannot be null");
-            var events = eventsToAppend as IEvent[] ?? eventsToAppend.ToArray();
-            Contract.Requires<ArgumentException>(Contract.ForAll(events, e => e != null), "none of the events in eventsToAppend can be null");
-
+            var events = eventsToAppend.ToArray();
             if(!events.Any())
                 return;
 
