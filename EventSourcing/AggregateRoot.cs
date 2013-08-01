@@ -13,7 +13,7 @@ namespace EventSourcing
         IUncommittedEvents UncommittedEvents { get; }
     }
 
-    public interface IAggregateRoot<TIdentity> : IAggregateRoot
+    public interface IAggregateRoot<out TIdentity> : IAggregateRoot
         where TIdentity : IIdentity
     {
         TIdentity Id { get; }

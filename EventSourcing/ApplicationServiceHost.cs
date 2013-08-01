@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace EventSourcing
 {
     /// <summary>
-    /// Hosts <see cref="IApplicationService<>"/>s and routes commands to the correct one
-    /// if loaded.
+    /// Hosts <see cref="IApplicationService"/>s and routes commands to the correct one if loaded.
     /// </summary>
     [ContractClass(typeof(IApplicationServiceHostContract))]
     public interface IApplicationServiceHost
@@ -40,7 +39,7 @@ namespace EventSourcing
 
         private Task _runningTask;
 
-        private readonly object mutex = new object();
+        private readonly object _mutex = new object();
 
         public DefaultApplicationServiceHost(ICommandQueueReader queueReader)
         {
@@ -60,7 +59,7 @@ namespace EventSourcing
         {
             if (_runningTask != null) return;
 
-            lock (mutex)
+            lock (_mutex)
             {
                 if (_runningTask != null) return;
 
@@ -84,9 +83,9 @@ namespace EventSourcing
             if (_token.IsCancellationRequested)
                 return;
 
-            ICommand command;
             while (!_token.IsCancellationRequested)
             {
+                ICommand command;
                 if (_queueReader.TryDequeue(out command))
                 {
                     var service = GetServiceFor((dynamic)command);

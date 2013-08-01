@@ -16,7 +16,7 @@ namespace EventSourcing
     /// An <see cref="IEvent"/> that happened to an aggregate with an Id
     /// of type <typeparam name="TIdentity"/>
     /// </summary>
-    public interface IEvent<TIdentity> : IEvent
+    public interface IEvent<out TIdentity> : IEvent
         where TIdentity : IIdentity
     {
         /// <summary>
@@ -37,7 +37,7 @@ namespace EventSourcing
     /// <typeparamref name="TIdentity"/>
     /// </summary>
     /// <typeparam name="TIdentity"></typeparam>
-    public interface ICommand<TIdentity> : ICommand
+    public interface ICommand<out TIdentity> : ICommand
         where TIdentity : IIdentity
     {
         /// <summary>
