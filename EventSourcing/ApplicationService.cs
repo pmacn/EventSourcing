@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Threading;
-using System.Threading.Tasks;
 namespace EventSourcing
 {
-    public interface IApplicationService<TIdentity>
+    public interface IApplicationService<in TIdentity>
         where TIdentity : IIdentity
     {
         void Execute(ICommand<TIdentity> command);

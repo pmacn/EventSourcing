@@ -25,8 +25,8 @@ namespace EventStorage
 
         public EventStream GetEventStreamFor(IIdentity aggregateId)
         {
-            var events = _persistance.GetEventsFor(aggregateId);
-            return new EventStream { StreamVersion = events.LongCount(), Events = events };
+            var events = _persistance.GetEventsFor(aggregateId).ToList();
+            return new EventStream { StreamVersion = events.Count(), Events = events };
         }
 
         public void AppendEventsToStream(IIdentity aggregateId, long expectedVersion, IEnumerable<IEvent> eventsToAppend)

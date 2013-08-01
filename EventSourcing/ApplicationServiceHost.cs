@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace EventSourcing
 {
     /// <summary>
-    /// Hosts <see cref="IApplicationService"/>s and routes commands to the correct one if loaded.
+    /// Hosts ApplicationServices and routes commands to the correct one if loaded.
     /// </summary>
     [ContractClass(typeof(IApplicationServiceHostContract))]
     public interface IApplicationServiceHost

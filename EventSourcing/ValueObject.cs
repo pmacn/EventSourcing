@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 
 namespace EventSourcing
 {
@@ -49,16 +48,11 @@ namespace EventSourcing
         {
             // TODO: This hash algoritm is probably not good enough for ValueObject
             var values = GetDefiningValues();
-            int hash = 23;
+            var hash = 23;
             unchecked
             {
-                foreach (var value in values)
-                {
-                    hash = hash * 31 + values.GetHashCode();
-                }
+                return values.Aggregate(hash, (current, value) => current*31 + value.GetHashCode());
             }
-
-            return hash;
         }
 
         [Pure]
