@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("EventPublishing")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany(".")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("EventPublishing")]
 [assembly: AssemblyCopyright("Copyright © Peter MacNaughton 2013")]
 [assembly: AssemblyTrademark("")]
