@@ -17,7 +17,7 @@ namespace EventStorage
 
         IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId);
 
-        long GetVersionFor(IIdentity aggregateId);
+        int GetVersionFor(IIdentity aggregateId);
     }
 
     [ContractClassFor(typeof(IEventPersistance))]
@@ -38,7 +38,7 @@ namespace EventStorage
         }
 
         [Pure]
-        public long GetVersionFor(IIdentity aggregateId)
+        public int GetVersionFor(IIdentity aggregateId)
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             throw new NotImplementedException();
@@ -47,9 +47,9 @@ namespace EventStorage
 
     public class InMemoryEventPersistance : IEventPersistance
     {
-        ConcurrentDictionary<IIdentity, List<IEvent>> _events = new ConcurrentDictionary<IIdentity, List<IEvent>>();
+        private readonly ConcurrentDictionary<IIdentity, List<IEvent>> _events = new ConcurrentDictionary<IIdentity, List<IEvent>>();
 
-        public long GetVersionFor(IIdentity aggregateId)
+        public int GetVersionFor(IIdentity aggregateId)
         {
             return EventsFor(aggregateId).Count;
         }
@@ -97,8 +97,8 @@ namespace EventStorage
 
         public SqlEventPersistance(IEventSerializer serializer, string connectionString)
         {
-            Contract.Requires(serializer != null, "serializer cannot be null");
-            Contract.Requires(!String.IsNullOrWhiteSpace(connectionString), "connectionString cannot be null, empty or whitespace");
+            Contract.Requires<ArgumentNullException>(serializer != null, "serializer cannot be null");
+            Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(connectionString), "connectionString cannot be null, empty or whitespace");
             _serializer = serializer;
             _connectionString = connectionString;
         }
@@ -146,7 +146,7 @@ namespace EventStorage
             }
         }
 
-        public long GetVersionFor(IIdentity aggregateId)
+        public int GetVersionFor(IIdentity aggregateId)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -155,7 +155,7 @@ namespace EventStorage
                     cmd.Parameters.AddWithValue("@aggregateId", aggregateId.GetId());
                     cmd.Parameters.AddWithValue("@aggregateIdTag", aggregateId.GetTag());
                     conn.Open();
-                    return (long)cmd.ExecuteScalar();
+                    return (int)cmd.ExecuteScalar();
                 }
             }
         }
@@ -174,7 +174,7 @@ namespace EventStorage
 
         private readonly IEventSerializer _serializer;
 
-        private readonly ConcurrentDictionary<IIdentity, long> _versionCache = new ConcurrentDictionary<IIdentity, long>();
+        private readonly ConcurrentDictionary<IIdentity, int> _versionCache = new ConcurrentDictionary<IIdentity, int>();
 
         private readonly string _storagePath;
 
@@ -205,41 +205,39 @@ namespace EventStorage
         public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId)
         {
             var events = new List<IEvent>();
-            long dataLength = 0;
             using (var reader = GetReader(aggregateId))
             {
                 while (reader.PeekChar() > -1)
                 {
-                    dataLength = reader.ReadInt64();
-                    var data = reader.ReadBytes((int)dataLength); // TODO: make this handle chunks longer than Int32.MaxValue
+                    var dataLength = reader.ReadInt32();
+                    var data = reader.ReadBytes(dataLength);
                     events.Add(_serializer.Deserialize(data));
                 }
             }
 
-            SetCachedVersion(aggregateId, events.LongCount());
+            SetCachedVersion(aggregateId, events.Count);
             return events;
         }
 
-        public long GetVersionFor(IIdentity aggregateId)
+        public int GetVersionFor(IIdentity aggregateId)
         {
             return _versionCache.GetOrAdd(aggregateId, GetVersionFromFile);
         }
 
-        private void SetCachedVersion(IIdentity aggregateId, long version)
+        private void SetCachedVersion(IIdentity aggregateId, int version)
         {
             _versionCache.AddOrUpdate(aggregateId, version, (i, c) => version);
         }
 
-        private long GetVersionFromFile(IIdentity aggregateId)
+        private int GetVersionFromFile(IIdentity aggregateId)
         {
             // TODO : Need a more efficient way to store version. Separate file? End of file?
-            long version = 0;
-            long dataLength = 0;
+            var version = 0;
             using (var reader = GetReader(aggregateId))
             {
                 while (reader.PeekChar() > -1)
                 {
-                    dataLength = reader.ReadInt64();
+                    var dataLength = reader.ReadInt32();
                     reader.BaseStream.Position += dataLength;
                     version++;
                 }
