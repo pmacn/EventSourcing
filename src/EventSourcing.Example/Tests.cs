@@ -6,8 +6,11 @@ using System.Threading;
 
 namespace EventSourcing.Example
 {
+    /// <summary>
+    /// 10000ft tests
+    /// </summary>
     [TestFixture]
-    public class AggregateRootWithSelfAsState
+    public class AggregateWithoutStateObject
     {
         private InMemoryCommandQueue _commandQueue;
 
@@ -49,7 +52,7 @@ namespace EventSourcing.Example
         }
 
         [Test]
-        public void DomainErrors()
+        public void AlreadyOpened_ThrowsDomainError()
         {
             var id = new ExampleId(1);
             var cmd = new OpenExample(id);

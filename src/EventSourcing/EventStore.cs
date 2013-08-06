@@ -38,7 +38,7 @@ namespace EventSourcing
 
     public class EventStream
     {
-        public long StreamVersion;
+        public int StreamVersion;
         public IEnumerable<IEvent> Events;
     }
 }

@@ -8,7 +8,7 @@ namespace EventSourcing
     {
         public AggregateConcurrencyException() { }
 
-        public AggregateConcurrencyException(long expectedVersion, long actualVersion)
+        public AggregateConcurrencyException(int expectedVersion, int actualVersion)
             : this(String.Format("Expected version: {0}; Actual version: {1}", expectedVersion, actualVersion)) { }
 
         public AggregateConcurrencyException(string message)
