@@ -63,10 +63,10 @@ namespace EventSourcing
         static AbstractIdentity()
         {
             var type = typeof(TKey);
-            if (type == typeof(int) || type == typeof(long) || type == typeof(uint) || type == typeof(ulong))
+            var validTypes = new Type[] { typeof(int), typeof(long), typeof(uint), typeof(ulong), typeof(Guid), typeof(string) };
+            if (validTypes.Any(t => t == type))
                 return;
-            if (type == typeof(Guid) || type == typeof(string))
-                return;
+
             throw new InvalidOperationException("Abstract identity inheritors must provide stable hash. It is not supported for:  " + type);
         }
 
