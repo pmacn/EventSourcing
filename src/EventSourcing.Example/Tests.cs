@@ -7,7 +7,7 @@ using System.Threading;
 namespace EventSourcing.Example
 {
     [TestFixture]
-    public class WithNewAggregate
+    public class AggregateRootWithSelfAsState
     {
         private InMemoryCommandQueue _commandQueue;
 
@@ -23,11 +23,65 @@ namespace EventSourcing.Example
         public void TestSetup()
         {
             _eventPublisher = new TestEventPublisher();
-            var eventStore = new MyEventStore(new InMemoryEventPersistance(), _eventPublisher);
+            var conflictDetector = new DelegateConflictDetector();
+            var eventStore = new MyEventStore(new InMemoryEventPersistance(), _eventPublisher, conflictDetector);
             var repo = new Repository(eventStore);
             _commandQueue = new InMemoryCommandQueue();
             _errorRouter = new TestDomainErrorRouter();
             _appService = new ExampleApplicationService(repo, _errorRouter);
+            _serviceHost = new DefaultApplicationServiceHost(_commandQueue);
+            _serviceHost.LoadService(_appService);
+            _serviceHost.Start();
+        }
+
+        [TearDown]
+        public void TestTeardown() { _serviceHost.Stop(); }
+
+        [Test]
+        public void EnqueingCommandWillPublishExpectedEvent()
+        {
+            var id = new ExampleId(1);
+            var cmd = new OpenExample(id);
+            _commandQueue.Enqueue(cmd);
+            Thread.Sleep(100); // Yay, threading hackery~
+            var e = _eventPublisher.PublishedEvents.FirstOrDefault();
+            Assert.IsInstanceOf(typeof(ExampleOpened), e);
+        }
+
+        [Test]
+        public void DomainErrors()
+        {
+            var id = new ExampleId(1);
+            var cmd = new OpenExample(id);
+            _commandQueue.Enqueue(cmd);
+            _commandQueue.Enqueue(cmd);
+            Thread.Sleep(100);
+            CollectionAssert.IsNotEmpty(_errorRouter.RoutedErrors);
+        }
+    }
+
+    public class AggregateWithStateObject
+    {
+        private InMemoryCommandQueue _commandQueue;
+
+        private TestEventPublisher _eventPublisher;
+
+        private ApplicationService<ExampleId> _appService;
+
+        private DefaultApplicationServiceHost _serviceHost;
+
+        private TestDomainErrorRouter _errorRouter;
+
+        [SetUp]
+        public void TestSetup()
+        {
+            _eventPublisher = new TestEventPublisher();
+            var conflictDetector = new DelegateConflictDetector();
+            var eventStore = new MyEventStore(new InMemoryEventPersistance(), _eventPublisher, conflictDetector);
+            var repo = new Repository(eventStore);
+            _commandQueue = new InMemoryCommandQueue();
+            _errorRouter = new TestDomainErrorRouter();
+            _appService = new ExampleWithStateApplicationService(repo, _errorRouter);
             _serviceHost = new DefaultApplicationServiceHost(_commandQueue);
             _serviceHost.LoadService(_appService);
             _serviceHost.Start();

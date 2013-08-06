@@ -36,6 +36,6 @@ namespace EventSourcing.Example
         public ExampleId Id { get; set; }
 
         [DataMember(Order = 2)]
-        public long ExpectedVersion { get; set; }
+        public int ExpectedVersion { get; set; }
     }
 }

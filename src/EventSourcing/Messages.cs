@@ -26,6 +26,7 @@ namespace EventSourcing
     /// </summary>
     public interface ICommand
     {
+        int ExpectedVersion { get; }
     }
 
     /// <summary>

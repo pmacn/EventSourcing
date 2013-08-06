@@ -1,4 +1,5 @@
 ﻿using EventSourcing;
+using EventStore;
 using EventStore.ClientAPI;
 using System;
 using System.Collections.Generic;
@@ -14,13 +15,16 @@ namespace EventStorage
 
         private readonly IEventPublisher _publisher;
 
-        public MyEventStore(IEventPersistance persistance, IEventPublisher publisher)
+        private readonly IConflictDetector _conflictDetector;
+
+        public MyEventStore(IEventPersistance persistance, IEventPublisher publisher, IConflictDetector conflictDetector)
         {
             Contract.Requires<ArgumentNullException>(persistance != null, "persistance cannot be null");
             Contract.Requires<ArgumentNullException>(publisher != null, "publisher cannot be null");
 
             _persistance = persistance;
             _publisher = publisher;
+            _conflictDetector = conflictDetector;
         }
 
         public EventStream GetEventStreamFor(IIdentity aggregateId)
@@ -29,15 +33,21 @@ namespace EventStorage
             return new EventStream { StreamVersion = events.Count(), Events = events };
         }
 
-        public void AppendEventsToStream(IIdentity aggregateId, long expectedVersion, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEnumerable<IEvent> eventsToAppend)
         {
             var events = eventsToAppend.ToArray();
             if(!events.Any())
                 return;
 
             var actualVersion = _persistance.GetVersionFor(aggregateId);
-            if(actualVersion != expectedVersion)
-                throw new AggregateConcurrencyException(expectedVersion, actualVersion);
+            if (actualVersion != expectedVersion)
+            {
+                var committedEvents = _persistance.GetEventsFor(aggregateId).Skip(expectedVersion).ToList();
+                if (_conflictDetector.HasConflict(committedEvents, eventsToAppend))
+                    throw new AggregateConcurrencyException(expectedVersion, actualVersion);
+
+                expectedVersion += committedEvents.Count;
+            }
 
             _persistance.AppendEvents(aggregateId, events);
             _publisher.Publish(events);
@@ -85,10 +95,10 @@ namespace EventStorage
             return new EventStream { Events = events, StreamVersion = events.Count };
         }
 
-        public void AppendEventsToStream(IIdentity aggregateId, long expectedVersion, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEnumerable<IEvent> eventsToAppend)
         {
             var streamName = StreamNameFactory(aggregateId);
-            _connection.AppendToStream(streamName, (int)expectedVersion, eventsToAppend.Select(CreateEventData));
+            _connection.AppendToStream(streamName, expectedVersion, eventsToAppend.Select(CreateEventData));
         }
 
         private EventData CreateEventData(IEvent e)
@@ -102,11 +112,41 @@ namespace EventStorage
         }
     }
 
-    public class AggregateVersionException : Exception
+    public class AggregateDeletedException : Exception
     {
     }
 
-    public class AggregateDeletedException : Exception
+    public interface IConflictDetector
     {
+        bool HasConflict(IEnumerable<IEvent> committed, IEnumerable<IEvent> uncommitted);
+    }
+
+    public class DelegateConflictDetector : IConflictDetector
+    {
+        private Dictionary<Type, Dictionary<Type, Func<IEvent, IEvent, bool>>> _delegates = new Dictionary<Type, Dictionary<Type, Func<IEvent, IEvent, bool>>>();
+
+        public bool HasConflict(IEnumerable<IEvent> committedEvents, IEnumerable<IEvent> uncommittedEvents)
+        {
+            var conflictingEvents = new List<IEvent>();
+            foreach (var committed in committedEvents)
+                foreach (var uncommitted in uncommittedEvents)
+                    if (Conflicts(committed, uncommitted))
+                        return true;
+
+            return false;
+        }
+
+        private bool Conflicts(IEvent committed, IEvent uncommitted)
+        {
+            Dictionary<Type, Func<IEvent, IEvent, bool>> _delegatesForCommittedType;
+            if (!_delegates.TryGetValue(committed.GetType(), out _delegatesForCommittedType))
+                return true;
+
+            Func<IEvent, IEvent, bool> conflictDelegate;
+            if (_delegatesForCommittedType.TryGetValue(uncommitted.GetType(), out conflictDelegate))
+                return true;
+
+            return conflictDelegate(committed, uncommitted);
+        }
     }
 }

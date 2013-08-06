@@ -21,5 +21,25 @@ namespace EventSourcing.Example
             _repository.Save(agg);
         }
     }
+
+    public class ExampleWithStateApplicationService : ApplicationService<ExampleId>
+    {
+        private readonly Repository _repository;
+
+        public ExampleWithStateApplicationService(Repository repository, IDomainErrorRouter errorRouter)
+            : base(errorRouter)
+        {
+            _repository = repository;
+        }
+
+        public void When(OpenExample c) { Update(c, e => e.Open(c.Id)); }
+
+        private void Update(ICommand<ExampleId> command, Action<AggregateWithStateClass> updateAction)
+        {
+            var agg = _repository.GetById<AggregateWithStateClass>(command.Id);
+            updateAction(agg);
+            _repository.Save(agg); // TODO: give expected version, it needs to move further down the chain.
+        }
+    }
 }
 

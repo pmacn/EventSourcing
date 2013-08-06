@@ -4,17 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{20775A52-9B65-4175-A519-B6867AD99C45}</ProjectGuid>
+    <ProjectGuid>{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EventPublishing</RootNamespace>
-    <AssemblyName>EventPublishing</AssemblyName>
+    <RootNamespace>ApplicationServices</RootNamespace>
+    <AssemblyName>ApplicationServices</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -55,10 +52,9 @@
     <CodeContractsBaseLineFile />
     <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
     <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
-    <CodeContractsRuntimeCheckingLevel>Preconditions</CodeContractsRuntimeCheckingLevel>
-    <CodeContractsReferenceAssembly>Build</CodeContractsReferenceAssembly>
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -67,18 +63,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Magnum">
-      <HintPath>..\packages\Magnum.2.1.0\lib\NET40\Magnum.dll</HintPath>
-    </Reference>
-    <Reference Include="MassTransit">
-      <HintPath>..\packages\MassTransit.2.7.4\lib\net40\MassTransit.dll</HintPath>
-    </Reference>
-    <Reference Include="MassTransit.Transports.MSMQ">
-      <HintPath>..\packages\MassTransit.2.7.4\lib\net40\MassTransit.Transports.MSMQ.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -88,7 +74,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EventPublisher.cs" />
+    <Compile Include="ApplicationService.cs" />
+    <Compile Include="ApplicationServiceHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -97,11 +84,7 @@
       <Name>EventSourcing</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\..\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\..\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

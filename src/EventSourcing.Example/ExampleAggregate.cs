@@ -18,9 +18,6 @@ namespace EventSourcing.Example
 
     public class ExampleState : AggregateState<ExampleId>
     {
-        public ExampleState(IEnumerable<IEvent> history)
-            : base(history) { }
-
         public void When(ExampleOpened e)
         {
             Contract.Requires(e != null, "event cannot be null");
@@ -28,12 +25,38 @@ namespace EventSourcing.Example
         }
     }
 
-    public class ExampleAggregate : AggregateRoot<ExampleId>
+    public sealed class ExampleAggregate : AggregateRoot<ExampleId>
     {
-        public ExampleAggregate(IEnumerable<IEvent> history)
+        public override ExampleId Id { get; protected set; }
+
+        public void Open(ExampleId id)
         {
-            Contract.Requires(history != null, "history cannot be null");
-            State = new ExampleState(history);
+            if (id == null)
+                throw DomainError.Named("invalid-aggregate-id", "null is not a valid id for Example");
+
+            if (Id != null)
+                throw DomainError.Named("example-already-opened", "");
+
+            ApplyChange(new ExampleOpened(id, DateTime.Now));
+        }
+
+        public void When(ExampleOpened e)
+        {
+            Id = e.Id;
+        }
+    }
+
+    public sealed class AggregateWithStateClass : AggregateRoot<ExampleId>
+    {
+        public override ExampleId Id
+        {
+            get { return State.Id; }
+            protected set { throw new NotSupportedException(); }
+        }
+
+        public override object GetStateObject()
+        {
+            return State;
         }
 
         public void Open(ExampleId id)
@@ -41,16 +64,12 @@ namespace EventSourcing.Example
             if (id == null)
                 throw DomainError.Named("invalid-aggregate-id", "null is not a valid id for Example");
 
-            if (State.Id != null)
+            if (Id != null)
                 throw DomainError.Named("example-already-opened", "");
+
             ApplyChange(new ExampleOpened(id, DateTime.Now));
         }
 
-        public ExampleState State { get; private set; }
-
-        protected override IAggregateState<ExampleId> GenericState
-        {
-            get { return State; }
-        }
+        private ExampleState State = new ExampleState();
     }
 }

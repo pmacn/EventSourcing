@@ -105,10 +105,20 @@ namespace EventSourcing
             if (_services.TryGetValue(typeof(TIdentity), out service))
                 return service as IApplicationService<TIdentity>;
 
-            throw new ApplicationException();
-            // This needs to be replaced with something more useful, maybe a
-            // strategy to actually deal with commands that we don't have a service for.
+            throw new ApplicationServiceNotFoundException("Unable to find applcation service for commands of type " + command.GetType().Name);
         }
+    }
+
+    [Serializable]
+    public class ApplicationServiceNotFoundException : Exception
+    {
+        public ApplicationServiceNotFoundException() { }
+        public ApplicationServiceNotFoundException(string message) : base(message) { }
+        public ApplicationServiceNotFoundException(string message, Exception inner) : base(message, inner) { }
+        protected ApplicationServiceNotFoundException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context)
+            : base(info, context) { }
     }
 
     public class ApplicationServiceAlreadyLoadedException : Exception

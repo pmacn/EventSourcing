@@ -48,11 +48,13 @@ namespace EventSourcing
             where TAggregate : IAggregateRoot
         {
             var stream = _store.GetEventStreamFor(aggregateId);
-            var ctor = typeof(TAggregate).GetConstructor(new [] { typeof(IEnumerable<IEvent>) });
+            var ctor = typeof(TAggregate).GetConstructor(Type.EmptyTypes);
             if (ctor == null)
                 throw new AggregateConstructionException(String.Format("Unable to find constructor that takes a history of events for type {0}", typeof(TAggregate).Name));
 
-            return (TAggregate)ctor.Invoke(new [] { stream.Events });
+            var agg = (TAggregate)ctor.Invoke(Type.EmptyTypes);
+            agg.LoadFrom(stream.Events);
+            return agg;
         }
 
         public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
