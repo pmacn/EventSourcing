@@ -11,9 +11,9 @@ namespace EventSourcing
     [ContractClass(typeof(EventStoreContract))]
     public interface IEventStore
     {
-        EventStream GetEventStreamFor(IIdentity aggregateId);
+        EventStream GetEventStreamFor(IIdentity aggregateId, int version = Int32.MaxValue);
 
-        void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEnumerable<IEvent> eventsToAppend);
+        void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend);
     }
 
     public class EventStream
@@ -25,14 +25,14 @@ namespace EventSourcing
     [ContractClassFor(typeof(IEventStore))]
     internal abstract class EventStoreContract : IEventStore
     {
-        [Pure]
-        public EventStream GetEventStreamFor(IIdentity aggregateId)
+        public EventStream GetEventStreamFor(IIdentity aggregateId, int version)
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
+            Contract.Requires<ArgumentOutOfRangeException>(version >= 0, "version cannot be negative");
             throw new NotImplementedException();
         }
 
-        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             Contract.Requires<ArgumentOutOfRangeException>(expectedVersion >= 0, "expectedVersion cannot be negative");

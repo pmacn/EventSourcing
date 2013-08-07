@@ -1,4 +1,5 @@
-﻿using EventSourcing;
+﻿using System.Runtime.Serialization;
+using EventSourcing;
 using EventStore;
 using EventStore.ClientAPI;
 using System;
@@ -6,6 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
+using System.Collections.Concurrent;
+using EventStore.ClientAPI.Exceptions;
 
 namespace EventStorage
 {
@@ -27,15 +30,15 @@ namespace EventStorage
             _conflictDetector = conflictDetector;
         }
 
-        public EventStream GetEventStreamFor(IIdentity aggregateId)
+        public EventStream GetEventStreamFor(IIdentity aggregateId, int version)
         {
-            var events = _persistance.GetEventsFor(aggregateId).ToList();
+            var events = _persistance.GetEventsFor(aggregateId).Take(version).ToList();
             return new EventStream { StreamVersion = events.Count(), Events = events };
         }
 
-        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
         {
-            var events = eventsToAppend.ToArray();
+            var events = eventsToAppend as IEvent[] ?? eventsToAppend.ToArray();
             if(!events.Any())
                 return;
 
@@ -43,7 +46,7 @@ namespace EventStorage
             if (actualVersion != expectedVersion)
             {
                 var committedEvents = _persistance.GetEventsFor(aggregateId).Skip(expectedVersion).ToList();
-                if (_conflictDetector.HasConflict(committedEvents, eventsToAppend))
+                if (_conflictDetector.HasConflict(committedEvents, events))
                     throw new AggregateConcurrencyException(expectedVersion, actualVersion);
 
                 expectedVersion += committedEvents.Count;
@@ -61,21 +64,31 @@ namespace EventStorage
         private readonly IEventStoreConnection _connection;
 
         private readonly IEventSerializer _serializer;
+        private readonly IConflictDetector _conflictDetector;
 
         private static readonly Func<IIdentity, string> StreamNameFactory = id => id.ToString();
 
-        public OtherEventStore(string ipAddress, int port, IEventSerializer serializer)
+        private readonly ConcurrentDictionary<string, WeakReference<List<IEvent>>> _cache =
+            new ConcurrentDictionary<string, WeakReference<List<IEvent>>>();
+
+        public OtherEventStore(string ipAddress, int port, IEventSerializer serializer, IConflictDetector conflictDetector)
         {
             var endPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
             _connection = EventStoreConnection.Create(endPoint, "myConnection");
             _serializer = serializer;
+            _conflictDetector = conflictDetector;
         }
 
-        public EventStream GetEventStreamFor(IIdentity aggregateId)
+        public EventStream GetEventStreamFor(IIdentity aggregateId, int version)
         {
-            var events = new List<IEvent>();
-            const int version = int.MaxValue;
             var streamName = StreamNameFactory(aggregateId);
+            if (_cache.ContainsKey(streamName))
+            {
+                List<IEvent> meh;
+                if (_cache[streamName].TryGetTarget(out meh))
+                    return new EventStream { Events = meh, StreamVersion = meh.Count };
+            }
+            var events = new List<IEvent>();
             var sliceStart = 1;
             var numberOfEventsToRead = Math.Min(ReadSliceSize, version - sliceStart + 1);
             StreamEventsSlice currentSlice;
@@ -92,13 +105,25 @@ namespace EventStorage
                 sliceStart = currentSlice.NextEventNumber;
             } while (version >= currentSlice.NextEventNumber && !currentSlice.IsEndOfStream);
 
+            var cacheReference = new WeakReference<List<IEvent>> (events);
+            _cache.AddOrUpdate(streamName, cacheReference, (s, r) => cacheReference);
             return new EventStream { Events = events, StreamVersion = events.Count };
         }
 
-        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
         {
             var streamName = StreamNameFactory(aggregateId);
-            _connection.AppendToStream(streamName, expectedVersion, eventsToAppend.Select(CreateEventData));
+            var eventData = eventsToAppend.Select(CreateEventData);
+            try
+            {
+                _connection.AppendToStream(streamName, expectedVersion, eventData);
+            }
+            catch (WrongExpectedVersionException ex)
+            {
+                var committedEvents = _connection.ReadStreamEventsForward(streamName, expectedVersion, Int32.MaxValue, false).Events.Select(EventFromData);
+                if (_conflictDetector.HasConflict(committedEvents, eventsToAppend))
+                    throw new AggregateConcurrencyException();
+            }
         }
 
         private EventData CreateEventData(IEvent e)
@@ -112,41 +137,16 @@ namespace EventStorage
         }
     }
 
+    [Serializable]
     public class AggregateDeletedException : Exception
     {
-    }
-
-    public interface IConflictDetector
-    {
-        bool HasConflict(IEnumerable<IEvent> committed, IEnumerable<IEvent> uncommitted);
-    }
-
-    public class DelegateConflictDetector : IConflictDetector
-    {
-        private Dictionary<Type, Dictionary<Type, Func<IEvent, IEvent, bool>>> _delegates = new Dictionary<Type, Dictionary<Type, Func<IEvent, IEvent, bool>>>();
-
-        public bool HasConflict(IEnumerable<IEvent> committedEvents, IEnumerable<IEvent> uncommittedEvents)
-        {
-            var conflictingEvents = new List<IEvent>();
-            foreach (var committed in committedEvents)
-                foreach (var uncommitted in uncommittedEvents)
-                    if (Conflicts(committed, uncommitted))
-                        return true;
-
-            return false;
-        }
-
-        private bool Conflicts(IEvent committed, IEvent uncommitted)
-        {
-            Dictionary<Type, Func<IEvent, IEvent, bool>> _delegatesForCommittedType;
-            if (!_delegates.TryGetValue(committed.GetType(), out _delegatesForCommittedType))
-                return true;
-
-            Func<IEvent, IEvent, bool> conflictDelegate;
-            if (_delegatesForCommittedType.TryGetValue(uncommitted.GetType(), out conflictDelegate))
-                return true;
-
-            return conflictDelegate(committed, uncommitted);
-        }
+        public AggregateDeletedException() { }
+        public AggregateDeletedException(string message) : base(message) { }
+        public AggregateDeletedException(string message, Exception inner)
+            : base(message, inner) { }
+        protected AggregateDeletedException(
+            SerializationInfo info,
+            StreamingContext context) : base(info, context)
+        { }
     }
 }

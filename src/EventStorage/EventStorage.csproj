@@ -7,8 +7,8 @@
     <ProjectGuid>{ED9347F5-CCAD-430A-80E8-BA770B4D9DE0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EventStore</RootNamespace>
-    <AssemblyName>EventStore</AssemblyName>
+    <RootNamespace>EventStorage</RootNamespace>
+    <AssemblyName>EventStorage</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
@@ -82,11 +82,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConflictDetector.cs" />
     <Compile Include="EventSerializationException.cs" />
     <Compile Include="EventSerializer.cs" />
     <Compile Include="EventPersistance.cs" />
     <Compile Include="EventStore.cs" />
-    <Compile Include="GetEventStoreRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StoreUnreachableException.cs" />
   </ItemGroup>

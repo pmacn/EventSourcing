@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Example", "Ev
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStorage", "EventStorage\EventStorage.csproj", "{ED9347F5-CCAD-430A-80E8-BA770B4D9DE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventPublishing", "EventPublishing\EventPublishing.csproj", "{20775A52-9B65-4175-A519-B6867AD99C45}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Publishing.MassTransit", "EventSourcing.Publishing.MassTransit\EventSourcing.Publishing.MassTransit.csproj", "{20775A52-9B65-4175-A519-B6867AD99C45}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1B04F628-F45D-4D4E-BAFF-BB9EC4D224A2}"
 	ProjectSection(SolutionItems) = preProject

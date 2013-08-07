@@ -41,7 +41,7 @@ namespace EventSourcing
             where TIdentity : IIdentity
         {
             var expectedVersion = aggregate.Version - aggregate.UncommittedEvents.Count();
-            _store.AppendEventsToStream(aggregate.Id, expectedVersion, aggregate.UncommittedEvents);
+            _store.AppendEventsToStream(aggregate.Id, expectedVersion, aggregate.UncommittedEvents.ToArray());
         }
     }
 

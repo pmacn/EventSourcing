@@ -80,7 +80,6 @@ namespace EventSourcing
         }
     }
 
-    [ContractClass(typeof(UncommittedEventsContract))]
     public interface IUncommittedEvents : IEnumerable<IEvent>
     {
         void MarkAsCommitted();
@@ -130,26 +129,6 @@ namespace EventSourcing
         {
             Contract.Invariant(Version >= 0, "Version cannot be negative");
             Contract.Invariant(UncommittedEvents != null, "UncommittedEvents cannot be null");
-        }
-    }
-
-    [ContractClassFor(typeof(IUncommittedEvents))]
-    internal abstract class UncommittedEventsContract : IUncommittedEvents
-    {
-        public void MarkAsCommitted() { }
-
-        [Pure]
-        public IEnumerator<IEvent> GetEnumerator()
-        {
-            Contract.Ensures(Contract.Result<IEnumerator<IEvent>>() != null, "GetEnumerator cannot return null");
-            throw new NotImplementedException();
-        }
-
-        [Pure]
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            Contract.Ensures(Contract.Result<IEnumerator>() != null, "GetEnumerator cannot return null");
-            throw new NotImplementedException();
         }
     }
 

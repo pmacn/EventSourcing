@@ -94,7 +94,7 @@
       <Project>{3d205f92-f9d5-4c67-9a23-e0f10df1f435}</Project>
       <Name>ApplicationServices</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EventPublishing\EventPublishing.csproj">
+    <ProjectReference Include="..\EventSourcing.Publishing.MassTransit\EventSourcing.Publishing.MassTransit.csproj">
       <Project>{20775a52-9b65-4175-a519-b6867ad99c45}</Project>
       <Name>EventPublishing</Name>
     </ProjectReference>
