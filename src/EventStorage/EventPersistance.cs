@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace EventStorage
 {
-    [ContractClass(typeof(IEventPersistanceContract))]
+    [ContractClass(typeof(EventPersistanceContract))]
     public interface IEventPersistance
     {
         void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend);
@@ -21,7 +21,7 @@ namespace EventStorage
     }
 
     [ContractClassFor(typeof(IEventPersistance))]
-    internal abstract class IEventPersistanceContract : IEventPersistance
+    internal abstract class EventPersistanceContract : IEventPersistance
     {
         public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {

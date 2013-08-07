@@ -8,7 +8,7 @@ namespace EventSourcing
     /// Should really just be using this as a wrapper around geteventstore.com
     /// But have a few simple implementations anyway, just for fun.
     /// </summary>
-    [ContractClass(typeof(IEventStoreContract))]
+    [ContractClass(typeof(EventStoreContract))]
     public interface IEventStore
     {
         EventStream GetEventStreamFor(IIdentity aggregateId);
@@ -16,8 +16,14 @@ namespace EventSourcing
         void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEnumerable<IEvent> eventsToAppend);
     }
 
+    public class EventStream
+    {
+        public int StreamVersion;
+        public IEnumerable<IEvent> Events;
+    }
+
     [ContractClassFor(typeof(IEventStore))]
-    internal abstract class IEventStoreContract : IEventStore
+    internal abstract class EventStoreContract : IEventStore
     {
         [Pure]
         public EventStream GetEventStreamFor(IIdentity aggregateId)
@@ -34,11 +40,5 @@ namespace EventSourcing
             Contract.Requires<ArgumentNullException>(Contract.ForAll(eventsToAppend, e => e != null), "None of the events in eventsToAppend can be null");
             throw new NotImplementedException();
         }
-    }
-
-    public class EventStream
-    {
-        public int StreamVersion;
-        public IEnumerable<IEvent> Events;
     }
 }

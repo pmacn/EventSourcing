@@ -80,10 +80,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EventRouter.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="AggregateRoot.cs" />
     <Compile Include="AggregateState.cs" />
     <Compile Include="DomainError.cs" />
-    <Compile Include="Exceptions\AggregateConcurrencyException.cs" />
     <Compile Include="EventStore.cs" />
     <Compile Include="Identity.cs" />
     <Compile Include="IEventPublisher.cs" />

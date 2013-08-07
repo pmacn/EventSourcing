@@ -90,7 +90,7 @@
     <Compile Include="Tests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ApplicationServices\ApplicationServices.csproj">
+    <ProjectReference Include="..\EventSourcing.ApplicationService\EventSourcing.ApplicationService.csproj">
       <Project>{3d205f92-f9d5-4c67-9a23-e0f10df1f435}</Project>
       <Name>ApplicationServices</Name>
     </ProjectReference>

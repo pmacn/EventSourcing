@@ -1,4 +1,6 @@
 ﻿
+using System.Runtime.Serialization;
+
 namespace EventSourcing
 {
     using System;
@@ -8,6 +10,7 @@ namespace EventSourcing
     using System.Linq;
     using System.Reflection;
 
+    [ContractClass(typeof(AggregateRootContract))]
     public interface IAggregateRoot
     {
         int Version { get; }
@@ -22,7 +25,7 @@ namespace EventSourcing
     {
         TIdentity Id { get; }
     }
-
+    
     /// <summary>
     /// A generic aggregate root with wiring to apply events and keep uncommitted events
     /// </summary>
@@ -32,25 +35,20 @@ namespace EventSourcing
     {
         private readonly UncommittedEvents _uncommittedEvents = new UncommittedEvents();
 
-        private readonly IEventRouter EventRouter;
+        private readonly IEventRouter _eventRouter;
 
-        public AggregateRoot()
-            : this(new ConventionEventRouter())
-        { }
+        protected AggregateRoot()
+            : this(new ConventionEventRouter()) { }
 
-        public AggregateRoot(IEventRouter eventRouter)
+        protected AggregateRoot(IEventRouter eventRouter)
         {
             Contract.Requires<ArgumentNullException>(eventRouter != null, "eventRouter cannot be null");
 
-            EventRouter = eventRouter;
-            EventRouter.Register(GetStateObject());
+            _eventRouter = eventRouter;
+            _eventRouter.Register(GetStateObject());
         }
 
-        // this feels a little icky, and I'm not quite sure why
-        public virtual object GetStateObject()
-        {
-            return this;
-        }
+        protected virtual object GetStateObject() { return this; }
 
         public abstract TIdentity Id { get; protected set; }
 
@@ -75,56 +73,14 @@ namespace EventSourcing
 
         private void ApplyChange(IEvent eventToApply, bool isNew)
         {
-            EventRouter.Route(eventToApply);
+            _eventRouter.Route(eventToApply);
             Version++;
             if (isNew)
                 _uncommittedEvents.Append(eventToApply);
         }
     }
 
-    public interface IEventRouter
-    {
-        void Route(IEvent eventToRoute);
-        void Register(object stateObject);
-    }
-
-    public class ConventionEventRouter : IEventRouter
-    {
-        private readonly Dictionary<Type, Action<object>> _routes = new Dictionary<Type, Action<object>>();
-
-        public void Route(IEvent eventToRoute)
-        {
-            Action<object> route;
-            if(!_routes.TryGetValue(eventToRoute.GetType(), out route))
-                throw new HandlerForEventNotFoundException();
-
-            route(eventToRoute);
-        }
-
-        public void Register(object stateObject)
-        {
-            var eventHandlerMethods =
-                stateObject.GetType()
-                           .GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
-                           .Where(IsEventHandlerMethod);
-
-            foreach (var method in eventHandlerMethods)
-            {
-                var eventType = method.GetParameters().Single().ParameterType;
-                _routes.Add(eventType, e => method.Invoke(stateObject, new [] { (dynamic)e }));
-            }         
-        }
-
-        private static bool IsEventHandlerMethod(MethodInfo m)
-        {
-            if (m.Name != "When" || m.ReturnType != typeof(void))
-                return false;
-
-            var parameters = m.GetParameters();
-            return parameters.Length == 1 && typeof(IEvent).IsAssignableFrom(parameters.Single().ParameterType);
-        }
-    }
-
+    [ContractClass(typeof(UncommittedEventsContract))]
     public interface IUncommittedEvents : IEnumerable<IEvent>
     {
         void MarkAsCommitted();
@@ -149,7 +105,53 @@ namespace EventSourcing
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
     }
 
-    public class HandlerForEventNotFoundException : System.Exception
+    #region Contract classes
+
+    [ContractClassFor(typeof(IAggregateRoot))]
+    internal abstract class AggregateRootContract : IAggregateRoot
     {
+        public int Version
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IUncommittedEvents UncommittedEvents
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void LoadFrom(IEnumerable<IEvent> history)
+        {
+            Contract.Requires<ArgumentNullException>(history != null, "history cannot be null");
+        }
+
+        [ContractInvariantMethod]
+        private void ContractInvariant()
+        {
+            Contract.Invariant(Version >= 0, "Version cannot be negative");
+            Contract.Invariant(UncommittedEvents != null, "UncommittedEvents cannot be null");
+        }
     }
+
+    [ContractClassFor(typeof(IUncommittedEvents))]
+    internal abstract class UncommittedEventsContract : IUncommittedEvents
+    {
+        public void MarkAsCommitted() { }
+
+        [Pure]
+        public IEnumerator<IEvent> GetEnumerator()
+        {
+            Contract.Ensures(Contract.Result<IEnumerator<IEvent>>() != null, "GetEnumerator cannot return null");
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            Contract.Ensures(Contract.Result<IEnumerator>() != null, "GetEnumerator cannot return null");
+            throw new NotImplementedException();
+        }
+    }
+
+    #endregion
 }

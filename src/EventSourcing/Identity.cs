@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace EventSourcing
 {
-    [ContractClass(typeof(IIdentityContract))]
+    [ContractClass(typeof(IdentityContract))]
     public interface IIdentity
     {
         /// <summary>
@@ -25,30 +25,6 @@ namespace EventSourcing
         /// </summary>
         /// <returns></returns>
         int GetConsistentHashCode();
-    }
-
-    [ContractClassFor(typeof(IIdentity))]
-    internal abstract class IIdentityContract : IIdentity
-    {
-        [Pure]
-        public string GetId()
-        {
-            Contract.Ensures(String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
-            throw new NotImplementedException();
-        }
-
-        [Pure]
-        public string GetTag()
-        {
-            Contract.Ensures(String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
-            throw new NotImplementedException();
-        }
-
-        [Pure]
-        public int GetConsistentHashCode()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     /// <summary>
@@ -154,5 +130,29 @@ namespace EventSourcing
         }
 
         #endregion
+    }
+
+    [ContractClassFor(typeof(IIdentity))]
+    internal abstract class IdentityContract : IIdentity
+    {
+        [Pure]
+        public string GetId()
+        {
+            Contract.Ensures(String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        public string GetTag()
+        {
+            Contract.Ensures(String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        public int GetConsistentHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

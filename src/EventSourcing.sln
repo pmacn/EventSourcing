@@ -16,7 +16,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1B04F6
 		..\.nuget\NuGet.targets = ..\.nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationServices", "ApplicationServices\ApplicationServices.csproj", "{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.ApplicationService", "EventSourcing.ApplicationService\EventSourcing.ApplicationService.csproj", "{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.ApplicationService.MassTransit", "EventSourcing.ApplicationService.MassTransit\EventSourcing.ApplicationService.MassTransit.csproj", "{0B912015-26AF-4DF3-841E-160E800EDCFC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +46,10 @@ Global
 		{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B912015-26AF-4DF3-841E-160E800EDCFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B912015-26AF-4DF3-841E-160E800EDCFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B912015-26AF-4DF3-841E-160E800EDCFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B912015-26AF-4DF3-841E-160E800EDCFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,11 +1,10 @@
 using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace EventSourcing
 {
-    [ContractClass(typeof(IRepositoryContract))]
+    [ContractClass(typeof(RepositoryContract))]
     public interface IRepository
     {
         TAggregate GetById<TAggregate>(IIdentity aggregateId)
@@ -13,25 +12,6 @@ namespace EventSourcing
 
         void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
             where TIdentity : IIdentity;
-    }
-
-    [ContractClassFor(typeof(IRepository))]
-    internal abstract class IRepositoryContract : IRepository
-    {
-        [Pure]
-        public TAggregate GetById<TAggregate>(IIdentity aggregateId) where TAggregate : IAggregateRoot
-        {
-            Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
-            Contract.Ensures(Contract.Result<TAggregate>() != null, "GetById cannot return null");
-            throw new NotImplementedException();
-        }
-
-        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate) where TIdentity : IIdentity
-        {
-            Contract.Requires<ArgumentNullException>(aggregate != null, "aggregate cannot be null");
-            Contract.Requires<ArgumentException>(aggregate.UncommittedEvents != null, "aggregate.UncommittedEvents cannot be null");
-            throw new NotImplementedException();
-        }
     }
 
     public class Repository : IRepository
@@ -52,7 +32,7 @@ namespace EventSourcing
             if (ctor == null)
                 throw new AggregateConstructionException(String.Format("Unable to find constructor that takes a history of events for type {0}", typeof(TAggregate).Name));
 
-            var agg = (TAggregate)ctor.Invoke(Type.EmptyTypes);
+            var agg = (TAggregate)ctor.Invoke(null);
             agg.LoadFrom(stream.Events);
             return agg;
         }
@@ -65,15 +45,22 @@ namespace EventSourcing
         }
     }
 
-    [Serializable]
-    public class AggregateConstructionException : Exception
+    [ContractClassFor(typeof(IRepository))]
+    internal abstract class RepositoryContract : IRepository
     {
-        public AggregateConstructionException() { }
-        public AggregateConstructionException(string message) : base(message) { }
-        public AggregateConstructionException(string message, Exception inner) : base(message, inner) { }
-        protected AggregateConstructionException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
+        [Pure]
+        public TAggregate GetById<TAggregate>(IIdentity aggregateId) where TAggregate : IAggregateRoot
+        {
+            Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
+            Contract.Ensures(Contract.Result<TAggregate>() != null, "GetById cannot return null");
+            throw new NotImplementedException();
+        }
+
+        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate) where TIdentity : IIdentity
+        {
+            Contract.Requires<ArgumentNullException>(aggregate != null, "aggregate cannot be null");
+            Contract.Requires<ArgumentException>(aggregate.UncommittedEvents != null, "aggregate.UncommittedEvents cannot be null");
+            throw new NotImplementedException();
+        }
     }
 }

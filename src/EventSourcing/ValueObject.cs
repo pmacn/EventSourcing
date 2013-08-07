@@ -48,10 +48,9 @@ namespace EventSourcing
         {
             // TODO: This hash algoritm is probably not good enough for ValueObject
             var values = GetDefiningValues();
-            var hash = 23;
             unchecked
             {
-                return values.Aggregate(hash, (current, value) => current*31 + value.GetHashCode());
+                return values.Aggregate(23, (current, value) => current*31 + value.GetHashCode());
             }
         }
 

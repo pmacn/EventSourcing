@@ -48,15 +48,17 @@ namespace EventSourcing.Example
 
     public sealed class AggregateWithStateClass : AggregateRoot<ExampleId>
     {
+        private readonly ExampleState _state = new ExampleState();
+
         public override ExampleId Id
         {
-            get { return State.Id; }
+            get { return _state.Id; }
             protected set { throw new NotSupportedException(); }
         }
 
-        public override object GetStateObject()
+        protected override object GetStateObject()
         {
-            return State;
+            return _state;
         }
 
         public void Open(ExampleId id)
@@ -69,7 +71,5 @@ namespace EventSourcing.Example
 
             ApplyChange(new ExampleOpened(id, DateTime.Now));
         }
-
-        private ExampleState State = new ExampleState();
     }
 }

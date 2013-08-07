@@ -4,15 +4,26 @@ using System.Diagnostics.Contracts;
 
 namespace EventSourcing
 {
-    [ContractClass(typeof(IAggregateStateContract<>))]
+    [ContractClass(typeof(AggregateStateContract<>))]
     public interface IAggregateState<TIdentity>
         where TIdentity : IIdentity
     {
         TIdentity Id { get; set; }
     }
 
+    public abstract class AggregateState<TIdentity> : IAggregateState<TIdentity>
+        where TIdentity : IIdentity
+    {
+        protected AggregateState()
+        {
+
+        }
+
+        public TIdentity Id { get; set; }
+    }
+
     [ContractClassFor(typeof(IAggregateState<>))]
-    internal abstract class IAggregateStateContract<TIdentity> : IAggregateState<TIdentity>
+    internal abstract class AggregateStateContract<TIdentity> : IAggregateState<TIdentity>
         where TIdentity : IIdentity
     {
         public TIdentity Id
@@ -23,19 +34,9 @@ namespace EventSourcing
             }
             set
             {
-                throw new NotImplementedException();
+                Contract.Requires(value != null, "cannot set Id to null");
             }
         }
     }
 
-    public abstract class AggregateState<TIdentity> : IAggregateState<TIdentity>
-        where TIdentity : IIdentity
-    {
-        public AggregateState()
-        {
-
-        }
-
-        public TIdentity Id { get; set; }
-    }
 }

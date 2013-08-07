@@ -1,4 +1,5 @@
-﻿using EventStorage;
+﻿using EventSourcing.ApplicationService;
+using EventStorage;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +53,7 @@ namespace EventSourcing.Example
         }
 
         [Test]
-        public void AlreadyOpened_ThrowsDomainError()
+        public void DomainErrorsAreRouted()
         {
             var id = new ExampleId(1);
             var cmd = new OpenExample(id);
