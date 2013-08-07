@@ -7,8 +7,8 @@
     <ProjectGuid>{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ApplicationServices</RootNamespace>
-    <AssemblyName>ApplicationServices</AssemblyName>
+    <RootNamespace>EventSourcing.ApplicationService</RootNamespace>
+    <AssemblyName>EventSourcing.ApplicationService</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
@@ -76,6 +76,7 @@
   <ItemGroup>
     <Compile Include="ApplicationService.cs" />
     <Compile Include="ApplicationServiceHost.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

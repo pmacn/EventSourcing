@@ -6,7 +6,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 
-namespace EventSourcing
+namespace EventSourcing.ApplicationService
 {
     public interface IApplicationService<in TIdentity>
         where TIdentity : IIdentity

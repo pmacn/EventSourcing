@@ -4,27 +4,16 @@ using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventSourcing
+namespace EventSourcing.ApplicationService
 {
     /// <summary>
     /// Hosts ApplicationServices and routes commands to the correct one if loaded.
     /// </summary>
-    [ContractClass(typeof(IApplicationServiceHostContract))]
+    [ContractClass(typeof(ApplicationServiceHostContract))]
     public interface IApplicationServiceHost
     {
         void LoadService<TIdentity>(IApplicationService<TIdentity> service)
             where TIdentity : IIdentity;
-    }
-
-    [ContractClassFor(typeof(IApplicationServiceHost))]
-    internal abstract class IApplicationServiceHostContract : IApplicationServiceHost
-    {
-        public void LoadService<TIdentity>(IApplicationService<TIdentity> service)
-            where TIdentity : IIdentity
-        {
-            Contract.Requires<ArgumentNullException>(service != null, "service cannot be null");
-            throw new NotImplementedException();
-        }
     }
 
     public class DefaultApplicationServiceHost : IApplicationServiceHost
@@ -109,23 +98,14 @@ namespace EventSourcing
         }
     }
 
-    [Serializable]
-    public class ApplicationServiceNotFoundException : Exception
+    [ContractClassFor(typeof(IApplicationServiceHost))]
+    internal abstract class ApplicationServiceHostContract : IApplicationServiceHost
     {
-        public ApplicationServiceNotFoundException() { }
-        public ApplicationServiceNotFoundException(string message) : base(message) { }
-        public ApplicationServiceNotFoundException(string message, Exception inner) : base(message, inner) { }
-        protected ApplicationServiceNotFoundException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
-    }
-
-    public class ApplicationServiceAlreadyLoadedException : Exception
-    {
-        public ApplicationServiceAlreadyLoadedException(Type type)
-            : base(String.Format("An application service for {0} is already loaded.", type.Name))
+        public void LoadService<TIdentity>(IApplicationService<TIdentity> service)
+            where TIdentity : IIdentity
         {
+            Contract.Requires<ArgumentNullException>(service != null, "service cannot be null");
+            throw new NotImplementedException();
         }
     }
 }
