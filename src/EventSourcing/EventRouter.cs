@@ -68,7 +68,7 @@ namespace EventSourcing
     }
 
     [ContractClassFor(typeof(IEventRouter))]
-    public class EventRouterContract : IEventRouter
+    internal abstract class EventRouterContract : IEventRouter
     {
         public void Route(IEvent eventToRoute)
         {

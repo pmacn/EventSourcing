@@ -28,8 +28,6 @@ namespace EventSourcing.ApplicationService
 
         private Task _runningTask;
 
-        private readonly object _mutex = new object();
-
         public DefaultApplicationServiceHost(ICommandQueueReader queueReader)
         {
             Contract.Requires<ArgumentNullException>(queueReader != null, "queueReader cannot be null.");
@@ -48,14 +46,9 @@ namespace EventSourcing.ApplicationService
         {
             if (_runningTask != null) return;
 
-            lock (_mutex)
-            {
-                if (_runningTask != null) return;
-
-                _tokenSource = new CancellationTokenSource();
-                _token = _tokenSource.Token;
-                _runningTask = Task.Factory.StartNew(Run, _token);
-            }
+            _tokenSource = new CancellationTokenSource();
+            _token = _tokenSource.Token;
+            _runningTask = Task.Factory.StartNew(Run, _token);
         }
 
         public void Stop()

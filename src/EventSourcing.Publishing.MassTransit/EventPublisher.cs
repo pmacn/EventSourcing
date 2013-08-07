@@ -12,7 +12,6 @@ namespace EventPublishing
         public EventPublisher(IServiceBus bus)
         {
             Contract.Requires<ArgumentNullException>(bus != null, "bus cannot be null");
-
             _bus = bus;
         }
 
