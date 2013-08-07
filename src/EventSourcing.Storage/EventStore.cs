@@ -9,8 +9,11 @@ using System.Linq;
 using System.Net;
 using System.Collections.Concurrent;
 using EventStore.ClientAPI.Exceptions;
+using EventSourcing.Serialization;
+using EventSourcing.Exceptions;
+using EventSourcing.Storage.Exceptions;
 
-namespace EventStorage
+namespace EventSourcing.Storage
 {
     public class MyEventStore : IEventStore
     {
@@ -30,13 +33,13 @@ namespace EventStorage
             _conflictDetector = conflictDetector;
         }
 
-        public EventStream GetEventStreamFor(IIdentity aggregateId, int version)
+        public EventStream GetEventStreamFor(IAggregateIdentity aggregateId, int version)
         {
             var events = _persistance.GetEventsFor(aggregateId).Take(version).ToList();
             return new EventStream { StreamVersion = events.Count(), Events = events };
         }
 
-        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
+        public void AppendEventsToStream(IAggregateIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
         {
             var events = eventsToAppend as IEvent[] ?? eventsToAppend.ToArray();
             if(!events.Any())
@@ -64,9 +67,10 @@ namespace EventStorage
         private readonly IEventStoreConnection _connection;
 
         private readonly IEventSerializer _serializer;
+
         private readonly IConflictDetector _conflictDetector;
 
-        private static readonly Func<IIdentity, string> StreamNameFactory = id => id.ToString();
+        private static readonly Func<IAggregateIdentity, string> StreamNameFactory = id => id.ToString();
 
         private readonly ConcurrentDictionary<string, WeakReference<List<IEvent>>> _cache =
             new ConcurrentDictionary<string, WeakReference<List<IEvent>>>();
@@ -79,7 +83,7 @@ namespace EventStorage
             _conflictDetector = conflictDetector;
         }
 
-        public EventStream GetEventStreamFor(IIdentity aggregateId, int version)
+        public EventStream GetEventStreamFor(IAggregateIdentity aggregateId, int version)
         {
             var streamName = StreamNameFactory(aggregateId);
             if (_cache.ContainsKey(streamName))
@@ -110,7 +114,7 @@ namespace EventStorage
             return new EventStream { Events = events, StreamVersion = events.Count };
         }
 
-        public void AppendEventsToStream(IIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
+        public void AppendEventsToStream(IAggregateIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
         {
             var streamName = StreamNameFactory(aggregateId);
             var eventData = eventsToAppend.Select(CreateEventData);
@@ -135,18 +139,5 @@ namespace EventStorage
         {
             return _serializer.Deserialize(resolvedEvent.OriginalEvent.Data);
         }
-    }
-
-    [Serializable]
-    public class AggregateDeletedException : Exception
-    {
-        public AggregateDeletedException() { }
-        public AggregateDeletedException(string message) : base(message) { }
-        public AggregateDeletedException(string message, Exception inner)
-            : base(message, inner) { }
-        protected AggregateDeletedException(
-            SerializationInfo info,
-            StreamingContext context) : base(info, context)
-        { }
     }
 }

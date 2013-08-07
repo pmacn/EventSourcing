@@ -81,11 +81,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EventRouter.cs" />
-    <Compile Include="Exceptions.cs" />
+    <Compile Include="Exceptions\AggregateConcurrencyException.cs" />
+    <Compile Include="Exceptions\AggregateConstructionException.cs" />
     <Compile Include="AggregateRoot.cs" />
     <Compile Include="AggregateState.cs" />
     <Compile Include="DomainError.cs" />
     <Compile Include="EventStore.cs" />
+    <Compile Include="Exceptions\EventHandlerNotFoundException.cs" />
     <Compile Include="Identity.cs" />
     <Compile Include="IEventPublisher.cs" />
     <Compile Include="Messages.cs" />
@@ -93,6 +95,7 @@
     <Compile Include="Repository.cs" />
     <Compile Include="ValueObject.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\..\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\..\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

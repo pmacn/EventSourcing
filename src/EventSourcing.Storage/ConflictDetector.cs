@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace EventStore
+namespace EventSourcing.Storage
 {
     [ContractClass(typeof(ConflictDetectorContract))]
     public interface IConflictDetector

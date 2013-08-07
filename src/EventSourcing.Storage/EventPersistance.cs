@@ -1,4 +1,5 @@
 ﻿using EventSourcing;
+using EventSourcing.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,38 +9,38 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
-namespace EventStorage
+namespace EventSourcing.Storage
 {
     [ContractClass(typeof(EventPersistanceContract))]
     public interface IEventPersistance
     {
-        void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend);
+        void AppendEvents(IAggregateIdentity aggregateId, IEnumerable<IEvent> eventsToAppend);
 
-        IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId, int version = Int32.MaxValue);
+        IEnumerable<IEvent> GetEventsFor(IAggregateIdentity aggregateId, int version = Int32.MaxValue);
 
-        int GetVersionFor(IIdentity aggregateId);
+        int GetVersionFor(IAggregateIdentity aggregateId);
     }
 
     public class InMemoryEventPersistance : IEventPersistance
     {
-        private readonly ConcurrentDictionary<IIdentity, List<IEvent>> _events = new ConcurrentDictionary<IIdentity, List<IEvent>>();
+        private readonly ConcurrentDictionary<IAggregateIdentity, List<IEvent>> _events = new ConcurrentDictionary<IAggregateIdentity, List<IEvent>>();
 
-        public int GetVersionFor(IIdentity aggregateId)
+        public int GetVersionFor(IAggregateIdentity aggregateId)
         {
             return EventsFor(aggregateId).Count;
         }
 
-        public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId, int version)
+        public IEnumerable<IEvent> GetEventsFor(IAggregateIdentity aggregateId, int version)
         {
             return EventsFor(aggregateId).Take(version).ToList();
         }
 
-        private List<IEvent> EventsFor(IIdentity aggregateId)
+        private List<IEvent> EventsFor(IAggregateIdentity aggregateId)
         {
             return _events.GetOrAdd(aggregateId, new List<IEvent>());
         }
 
-        public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEvents(IAggregateIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
             EventsFor(aggregateId).AddRange(eventsToAppend);
         }
@@ -78,7 +79,7 @@ namespace EventStorage
             _connectionString = connectionString;
         }
 
-        public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEvents(IAggregateIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -97,7 +98,7 @@ namespace EventStorage
             }
         }
 
-        public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId, int version)
+        public IEnumerable<IEvent> GetEventsFor(IAggregateIdentity aggregateId, int version)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -122,7 +123,7 @@ namespace EventStorage
             }
         }
 
-        public int GetVersionFor(IIdentity aggregateId)
+        public int GetVersionFor(IAggregateIdentity aggregateId)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -150,7 +151,7 @@ namespace EventStorage
 
         private readonly IEventSerializer _serializer;
 
-        private readonly ConcurrentDictionary<IIdentity, int> _versionCache = new ConcurrentDictionary<IIdentity, int>();
+        private readonly ConcurrentDictionary<IAggregateIdentity, int> _versionCache = new ConcurrentDictionary<IAggregateIdentity, int>();
 
         private readonly string _storagePath;
 
@@ -166,7 +167,7 @@ namespace EventStorage
 
         #endregion
 
-        public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEvents(IAggregateIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
             using (var writer = GetWriter(aggregateId))
             {
@@ -178,7 +179,7 @@ namespace EventStorage
             }
         }
 
-        public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId, int version)
+        public IEnumerable<IEvent> GetEventsFor(IAggregateIdentity aggregateId, int version)
         {
             var events = new List<IEvent>();
             using (var reader = GetReader(aggregateId))
@@ -195,17 +196,17 @@ namespace EventStorage
             return events;
         }
 
-        public int GetVersionFor(IIdentity aggregateId)
+        public int GetVersionFor(IAggregateIdentity aggregateId)
         {
             return _versionCache.GetOrAdd(aggregateId, GetVersionFromFile);
         }
 
-        private void SetCachedVersion(IIdentity aggregateId, int version)
+        private void SetCachedVersion(IAggregateIdentity aggregateId, int version)
         {
             _versionCache.AddOrUpdate(aggregateId, version, (i, c) => version);
         }
 
-        private int GetVersionFromFile(IIdentity aggregateId)
+        private int GetVersionFromFile(IAggregateIdentity aggregateId)
         {
             // TODO : Need a more efficient way to store version. Separate file? End of file?
             var version = 0;
@@ -222,19 +223,19 @@ namespace EventStorage
             return version;
         }
 
-        private BinaryReader GetReader(IIdentity aggregateId)
+        private BinaryReader GetReader(IAggregateIdentity aggregateId)
         {
             var fileStream = File.Open(GetFilePath(aggregateId), FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
             return new BinaryReader(fileStream);
         }
 
-        private string GetFilePath(IIdentity aggregateId)
+        private string GetFilePath(IAggregateIdentity aggregateId)
         {
             var filePath = Path.Combine(_storagePath, String.Concat(aggregateId.GetTag(), aggregateId.GetId()));
             return filePath;
         }
 
-        private BinaryWriter GetWriter(IIdentity aggregateId)
+        private BinaryWriter GetWriter(IAggregateIdentity aggregateId)
         {
             var fileStream = File.Open(GetFilePath(aggregateId), FileMode.Append, FileAccess.Write, FileShare.None);
             return new BinaryWriter(fileStream);
@@ -244,7 +245,7 @@ namespace EventStorage
     [ContractClassFor(typeof(IEventPersistance))]
     internal abstract class EventPersistanceContract : IEventPersistance
     {
-        public void AppendEvents(IIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
+        public void AppendEvents(IAggregateIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             Contract.Requires<ArgumentNullException>(eventsToAppend != null, "eventsToAppend cannot be null");
@@ -252,7 +253,7 @@ namespace EventStorage
         }
 
         [Pure]
-        public IEnumerable<IEvent> GetEventsFor(IIdentity aggregateId, int version)
+        public IEnumerable<IEvent> GetEventsFor(IAggregateIdentity aggregateId, int version)
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             Contract.Requires<ArgumentOutOfRangeException>(version >= 0, "version cannot be negative");
@@ -260,7 +261,7 @@ namespace EventStorage
         }
 
         [Pure]
-        public int GetVersionFor(IIdentity aggregateId)
+        public int GetVersionFor(IAggregateIdentity aggregateId)
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             throw new NotImplementedException();

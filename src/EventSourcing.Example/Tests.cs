@@ -1,6 +1,5 @@
 ﻿using EventSourcing.ApplicationService;
-using EventStorage;
-using EventStore;
+using EventSourcing.Storage;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;

@@ -16,7 +16,7 @@ namespace EventSourcing
     /// </summary>
     [ContractClass(typeof(EventContract<>))]
     public interface IEvent<out TIdentity> : IEvent
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         /// <summary>
         /// Id of the aggregate where the event originated
@@ -39,7 +39,7 @@ namespace EventSourcing
     /// <typeparam name="TIdentity"></typeparam>
     [ContractClass(typeof(CommandContract<>))]
     public interface ICommand<out TIdentity> : ICommand
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         /// <summary>
         /// Id of the aggregate that the command is for
@@ -49,7 +49,7 @@ namespace EventSourcing
 
     [ContractClassFor(typeof(IEvent<>))]
     internal abstract  class EventContract<TIdentity> : IEvent<TIdentity>
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         public TIdentity Id { get { throw new System.NotImplementedException(); } }
 
@@ -62,7 +62,7 @@ namespace EventSourcing
 
     [ContractClassFor(typeof(ICommand<>))]
     internal abstract class CommandContract<TIdentity> : ICommand<TIdentity>
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         public TIdentity Id
         {

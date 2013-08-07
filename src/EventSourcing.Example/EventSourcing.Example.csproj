@@ -102,7 +102,7 @@
       <Project>{712a91cd-01c1-4fcc-a7e7-44a4586c21f4}</Project>
       <Name>EventSourcing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EventStorage\EventStorage.csproj">
+    <ProjectReference Include="..\EventSourcing.Storage\EventSourcing.Storage.csproj">
       <Project>{ed9347f5-ccad-430a-80e8-ba770b4d9de0}</Project>
       <Name>EventStorage</Name>
     </ProjectReference>

@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing", "EventSourc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Example", "EventSourcing.Example\EventSourcing.Example.csproj", "{2F072D89-603C-43BC-8CF7-62E32D93CD94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStorage", "EventStorage\EventStorage.csproj", "{ED9347F5-CCAD-430A-80E8-BA770B4D9DE0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Storage", "EventSourcing.Storage\EventSourcing.Storage.csproj", "{ED9347F5-CCAD-430A-80E8-BA770B4D9DE0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Publishing.MassTransit", "EventSourcing.Publishing.MassTransit\EventSourcing.Publishing.MassTransit.csproj", "{20775A52-9B65-4175-A519-B6867AD99C45}"
 EndProject
@@ -19,6 +19,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.ApplicationService", "EventSourcing.ApplicationService\EventSourcing.ApplicationService.csproj", "{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.ApplicationService.MassTransit", "EventSourcing.ApplicationService.MassTransit\EventSourcing.ApplicationService.MassTransit.csproj", "{0B912015-26AF-4DF3-841E-160E800EDCFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Serialization", "EventSourcing.Serialization\EventSourcing.Serialization.csproj", "{30F2DCB7-921E-4C94-AE32-1ABC9B3361E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Serialization.Json", "EventSourcing.Serialization.Json\EventSourcing.Serialization.Json.csproj", "{BF04227F-5770-4793-B8A1-AA979B39F70B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +54,14 @@ Global
 		{0B912015-26AF-4DF3-841E-160E800EDCFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B912015-26AF-4DF3-841E-160E800EDCFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B912015-26AF-4DF3-841E-160E800EDCFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30F2DCB7-921E-4C94-AE32-1ABC9B3361E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30F2DCB7-921E-4C94-AE32-1ABC9B3361E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30F2DCB7-921E-4C94-AE32-1ABC9B3361E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30F2DCB7-921E-4C94-AE32-1ABC9B3361E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF04227F-5770-4793-B8A1-AA979B39F70B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF04227F-5770-4793-B8A1-AA979B39F70B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF04227F-5770-4793-B8A1-AA979B39F70B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF04227F-5770-4793-B8A1-AA979B39F70B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

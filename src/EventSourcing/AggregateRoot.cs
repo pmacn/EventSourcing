@@ -1,15 +1,14 @@
 ﻿
 using System.Runtime.Serialization;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
+using System.Reflection;
 
 namespace EventSourcing
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
-    using System.Linq;
-    using System.Reflection;
-
     [ContractClass(typeof(AggregateRootContract))]
     public interface IAggregateRoot
     {
@@ -21,7 +20,7 @@ namespace EventSourcing
     }
 
     public interface IAggregateRoot<out TIdentity> : IAggregateRoot
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         TIdentity Id { get; }
     }
@@ -31,7 +30,7 @@ namespace EventSourcing
     /// </summary>
     /// <typeparam name="TIdentity"></typeparam>
     public abstract class AggregateRoot<TIdentity> : IAggregateRoot<TIdentity>
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         private readonly UncommittedEvents _uncommittedEvents = new UncommittedEvents();
 

@@ -5,8 +5,9 @@ using System;
 using MassTransit;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using EventSourcing.ApplicationService.Exceptions;
 
-namespace EventSourcing.ApplcationService.MassTransit
+namespace EventSourcing.ApplicationService.MassTransit
 {
     public class MassTransitApplicationServiceHost : IApplicationServiceHost, IDisposable
     {
@@ -27,7 +28,7 @@ namespace EventSourcing.ApplcationService.MassTransit
             _domainErrorRouter = domainErrorRouter;
         }
 
-        public void LoadService<TIdentity>(IApplicationService<TIdentity> service) where TIdentity : IIdentity
+        public void LoadService<TIdentity>(IApplicationService<TIdentity> service) where TIdentity : IAggregateIdentity
         {
             var commandType = typeof (ICommand<TIdentity>);
             var subscription = _serviceBus.SubscribeHandler<ICommand<TIdentity>>(SubscriptionMethod);
@@ -37,7 +38,7 @@ namespace EventSourcing.ApplcationService.MassTransit
         }
 
         private void SubscriptionMethod<TIdentity>(ICommand<TIdentity> command)
-            where TIdentity : IIdentity
+            where TIdentity : IAggregateIdentity
         {
             object service;
             if(!_services.TryGetValue(command.GetType(), out service) || !(service is IApplicationService<TIdentity>))

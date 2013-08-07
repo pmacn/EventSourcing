@@ -4,8 +4,8 @@ using System.Linq;
 
 namespace EventSourcing
 {
-    [ContractClass(typeof(IdentityContract))]
-    public interface IIdentity
+    [ContractClass(typeof(AggregateIdentityContract))]
+    public interface IAggregateIdentity
     {
         /// <summary>
         /// Gets the id, converted to a string. Only alphanumerics and '-' are allowed.
@@ -28,15 +28,15 @@ namespace EventSourcing
     }
 
     /// <summary>
-    /// Base implementation of <see cref="IIdentity"/>
+    /// Base implementation of <see cref="IAggregateIdentity"/>
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     [Serializable]
-    public abstract class AbstractIdentity<TKey> : IIdentity
+    public abstract class AbstractAggregateIdentity<TKey> : IAggregateIdentity
     {
         #region Constructors
 
-        static AbstractIdentity()
+        static AbstractAggregateIdentity()
         {
             var type = typeof(TKey);
             var validTypes = new Type[] { typeof(int), typeof(long), typeof(uint), typeof(ulong), typeof(Guid), typeof(string) };
@@ -68,7 +68,7 @@ namespace EventSourcing
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
 
-            var identity = obj as AbstractIdentity<TKey>;
+            var identity = obj as AbstractAggregateIdentity<TKey>;
 
             if (identity != null)
             {
@@ -103,7 +103,7 @@ namespace EventSourcing
             }
         }
 
-        public bool Equals(AbstractIdentity<TKey> other)
+        public bool Equals(AbstractAggregateIdentity<TKey> other)
         {
             if (other != null)
             {
@@ -118,13 +118,13 @@ namespace EventSourcing
         #region Operators
 
         [Pure]
-        public static bool operator ==(AbstractIdentity<TKey> left, AbstractIdentity<TKey> right)
+        public static bool operator ==(AbstractAggregateIdentity<TKey> left, AbstractAggregateIdentity<TKey> right)
         {
             return Equals(left, right);
         }
 
         [Pure]
-        public static bool operator !=(AbstractIdentity<TKey> left, AbstractIdentity<TKey> right)
+        public static bool operator !=(AbstractAggregateIdentity<TKey> left, AbstractAggregateIdentity<TKey> right)
         {
             return !Equals(left, right);
         }
@@ -132,8 +132,8 @@ namespace EventSourcing
         #endregion
     }
 
-    [ContractClassFor(typeof(IIdentity))]
-    internal abstract class IdentityContract : IIdentity
+    [ContractClassFor(typeof(IAggregateIdentity))]
+    internal abstract class AggregateIdentityContract : IAggregateIdentity
     {
         [Pure]
         public string GetId()

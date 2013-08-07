@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EventSourcing.ApplicationService.Exceptions;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,13 +10,13 @@ using System.Reflection;
 namespace EventSourcing.ApplicationService
 {
     public interface IApplicationService<in TIdentity>
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         void Execute(ICommand<TIdentity> command);
     }
 
     public abstract class ApplicationService<TIdentity> : IApplicationService<TIdentity>
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         private readonly IDomainErrorRouter _errorRouter;
 

@@ -6,13 +6,13 @@ namespace EventSourcing
 {
     [ContractClass(typeof(AggregateStateContract<>))]
     public interface IAggregateState<TIdentity>
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         TIdentity Id { get; set; }
     }
 
     public abstract class AggregateState<TIdentity> : IAggregateState<TIdentity>
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         protected AggregateState()
         {
@@ -24,7 +24,7 @@ namespace EventSourcing
 
     [ContractClassFor(typeof(IAggregateState<>))]
     internal abstract class AggregateStateContract<TIdentity> : IAggregateState<TIdentity>
-        where TIdentity : IIdentity
+        where TIdentity : IAggregateIdentity
     {
         public TIdentity Id
         {

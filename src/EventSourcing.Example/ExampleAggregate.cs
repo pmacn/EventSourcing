@@ -4,7 +4,7 @@ using System.Diagnostics.Contracts;
 
 namespace EventSourcing.Example
 {
-    public class ExampleId : AbstractIdentity<int>
+    public class ExampleId : AbstractAggregateIdentity<int>
     {
         public ExampleId(int id)
         {

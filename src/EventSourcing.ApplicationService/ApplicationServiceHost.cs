@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EventSourcing.ApplicationService.Exceptions;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.Contracts;
 using System.Threading;
@@ -13,7 +14,7 @@ namespace EventSourcing.ApplicationService
     public interface IApplicationServiceHost
     {
         void LoadService<TIdentity>(IApplicationService<TIdentity> service)
-            where TIdentity : IIdentity;
+            where TIdentity : IAggregateIdentity;
     }
 
     public class DefaultApplicationServiceHost : IApplicationServiceHost
@@ -35,7 +36,7 @@ namespace EventSourcing.ApplicationService
         }
 
         public void LoadService<TIdentity>(IApplicationService<TIdentity> service)
-            where TIdentity : IIdentity
+            where TIdentity : IAggregateIdentity
         {
             var idType = typeof(TIdentity);
             if (!_services.TryAdd(idType, service))
@@ -81,7 +82,7 @@ namespace EventSourcing.ApplicationService
         }
 
         private IApplicationService<TIdentity> GetServiceFor<TIdentity>(ICommand<TIdentity> command)
-            where TIdentity : IIdentity
+            where TIdentity : IAggregateIdentity
         {
             object service;
             if (_services.TryGetValue(typeof(TIdentity), out service))
@@ -95,7 +96,7 @@ namespace EventSourcing.ApplicationService
     internal abstract class ApplicationServiceHostContract : IApplicationServiceHost
     {
         public void LoadService<TIdentity>(IApplicationService<TIdentity> service)
-            where TIdentity : IIdentity
+            where TIdentity : IAggregateIdentity
         {
             Contract.Requires<ArgumentNullException>(service != null, "service cannot be null");
             throw new NotImplementedException();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EventSourcing.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace EventSourcing
         {
             Action<object> route;
             if (!_routes.TryGetValue(eventToRoute.GetType(), out route))
-                throw new HandlerForEventNotFoundException();
+                throw new EventHandlerNotFoundException();
 
             route(eventToRoute);
         }
