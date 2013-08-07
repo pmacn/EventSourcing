@@ -6,7 +6,7 @@ namespace EventSourcing
     /// <summary>
     /// An event that happened in the domain
     /// </summary>
-    public interface IEvent
+    public partial interface IEvent
     {
     }
 

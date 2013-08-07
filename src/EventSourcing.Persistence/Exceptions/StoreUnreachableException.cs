@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace EventSourcing.Storage.Exceptions
+namespace EventSourcing.Persistence.Exceptions
 {
     [Serializable]
     public class StoreUnreachableException : Exception

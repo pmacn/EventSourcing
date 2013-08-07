@@ -1,5 +1,6 @@
 ﻿using EventSourcing.ApplicationService;
-using EventSourcing.Storage;
+using EventSourcing.Persistence;
+using EventSourcing.Serialization;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace EventSourcing.Example
     [TestFixture]
     public class AggregateWithoutStateObject
     {
-        private InMemoryCommandQueue _commandQueue;
+        private MemoryCommandQueue _commandQueue;
 
         private TestEventPublisher _eventPublisher;
 
@@ -28,9 +29,9 @@ namespace EventSourcing.Example
         {
             _eventPublisher = new TestEventPublisher();
             var conflictDetector = new DelegateConflictDetector();
-            var eventStore = new MyEventStore(new InMemoryEventPersistance(), _eventPublisher, conflictDetector);
+            var eventStore = new EventStore(new MemoryEventPersistance(new BinaryEventSerializer()), _eventPublisher, conflictDetector);
             var repo = new Repository(eventStore);
-            _commandQueue = new InMemoryCommandQueue();
+            _commandQueue = new MemoryCommandQueue();
             _errorRouter = new TestDomainErrorRouter();
             _appService = new ExampleApplicationService(repo, _errorRouter);
             _serviceHost = new DefaultApplicationServiceHost(_commandQueue);
@@ -66,7 +67,7 @@ namespace EventSourcing.Example
 
     public class AggregateWithStateObject
     {
-        private InMemoryCommandQueue _commandQueue;
+        private MemoryCommandQueue _commandQueue;
 
         private TestEventPublisher _eventPublisher;
 
@@ -81,9 +82,9 @@ namespace EventSourcing.Example
         {
             _eventPublisher = new TestEventPublisher();
             var conflictDetector = new DelegateConflictDetector();
-            var eventStore = new MyEventStore(new InMemoryEventPersistance(), _eventPublisher, conflictDetector);
+            var eventStore = new EventStore(new MemoryEventPersistance(new BinaryEventSerializer()), _eventPublisher, conflictDetector);
             var repo = new Repository(eventStore);
-            _commandQueue = new InMemoryCommandQueue();
+            _commandQueue = new MemoryCommandQueue();
             _errorRouter = new TestDomainErrorRouter();
             _appService = new ExampleWithStateApplicationService(repo, _errorRouter);
             _serviceHost = new DefaultApplicationServiceHost(_commandQueue);

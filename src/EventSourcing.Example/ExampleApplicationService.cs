@@ -1,5 +1,6 @@
 using System;
 using EventSourcing.ApplicationService;
+using EventSourcing.Persistence;
 
 namespace EventSourcing.Example
 {

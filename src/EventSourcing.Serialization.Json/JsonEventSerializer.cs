@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,34 +11,48 @@ namespace EventSourcing.Serialization.Json
 {
     public class JsonEventSerializer : IEventSerializer
     {
+        private static readonly JsonSerializerSettings _serializerSettings =
+            new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Objects,  };
+
         public byte[] Serialize(IEvent eventToSerialize)
         {
-            var sb = new StringBuilder();
-            var serializer = new JsonSerializer();
             try
             {
-                serializer.Serialize(new JsonTextWriter(new StringWriter(sb)), eventToSerialize);
+                var json = JsonConvert.SerializeObject(eventToSerialize, _serializerSettings);
+                return GetBytes(json);
             }
             catch (JsonSerializationException ex)
             {
                 throw new EventSerializationException("Error serializing event, see inner exception.", ex);
             }
-
-            return Convert.FromBase64String(sb.ToString());
         }
 
         public IEvent Deserialize(byte[] serializedEvent)
         {
-            var json = Convert.ToBase64String(serializedEvent);
-            var reader = new JsonTextReader(new StringReader(json));
+            var json = GetString(serializedEvent);
             try
             {
-                return new JsonSerializer().Deserialize(reader) as IEvent;
+                var deserialized = JsonConvert.DeserializeObject(json, _serializerSettings);
+                return deserialized as IEvent;
             }
             catch (JsonSerializationException ex)
             {
                 throw new EventSerializationException("Error deserializing event, see inner exception", ex);
             }
+        }
+
+        static byte[] GetBytes(string str)
+        {
+            var bytes = new byte[str.Length * sizeof(char)];
+            Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+            return bytes;
+        }
+
+        static string GetString(byte[] bytes)
+        {
+            var chars = new char[bytes.Length / sizeof(char)];
+            Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
+            return new string(chars);
         }
     }
 }

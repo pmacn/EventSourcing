@@ -73,7 +73,7 @@ namespace EventSourcing.ApplicationService
         void Enqueue(ICommand command);
     }
 
-    public class InMemoryCommandQueue : ICommandQueueReader, ICommandQueueWriter
+    public class MemoryCommandQueue : ICommandQueueReader, ICommandQueueWriter
     {
         private readonly ConcurrentQueue<ICommand> _queue = new ConcurrentQueue<ICommand>();
 

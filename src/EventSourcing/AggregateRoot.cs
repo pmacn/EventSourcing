@@ -47,6 +47,7 @@ namespace EventSourcing
             _eventRouter.Register(GetStateObject());
         }
 
+        // HACK: Feels quite smelly, try to come up with a better solution
         protected virtual object GetStateObject() { return this; }
 
         public abstract TIdentity Id { get; protected set; }

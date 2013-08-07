@@ -21,10 +21,7 @@ namespace EventSourcing
         private readonly string _eventHandlerMethodName;
 
         public ConventionEventRouter()
-            : this("When")
-        {
-            
-        }
+            : this("When") { }
 
         public ConventionEventRouter(string eventHandlerMethodName)
         {
@@ -68,6 +65,8 @@ namespace EventSourcing
         }
     }
 
+    #region Contract classes
+
     [ContractClassFor(typeof(IEventRouter))]
     internal abstract class EventRouterContract : IEventRouter
     {
@@ -81,4 +80,6 @@ namespace EventSourcing
             Contract.Requires<ArgumentNullException>(stateObject != null, "stateObject cannot be null");
         }
     }
+    
+    #endregion
 }

@@ -22,6 +22,8 @@ namespace EventSourcing
         public TIdentity Id { get; set; }
     }
 
+    #region Contract classes
+
     [ContractClassFor(typeof(IAggregateState<>))]
     internal abstract class AggregateStateContract<TIdentity> : IAggregateState<TIdentity>
         where TIdentity : IAggregateIdentity
@@ -39,4 +41,5 @@ namespace EventSourcing
         }
     }
 
+    #endregion
 }

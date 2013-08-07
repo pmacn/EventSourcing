@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace EventSourcing.Storage
+namespace EventSourcing.Persistence
 {
     [ContractClass(typeof(ConflictDetectorContract))]
     public interface IConflictDetector
@@ -13,6 +13,13 @@ namespace EventSourcing.Storage
         bool HasConflict(IEnumerable<IEvent> committed, IEnumerable<IEvent> uncommitted);
     }
 
+
+    /// <summary>
+    /// Conflict detector that registers delegates to detect conflicts.
+    /// A conflict will automatically be assumed if there is no delegate
+    /// for a specific pair of events.
+    /// </summary>
+    // TODO : need some way to indicate that a specific event does not conflict with any other event.
     public class DelegateConflictDetector : IConflictDetector
     {
         private readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, Func<object, object, bool>>> _delegates =

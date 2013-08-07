@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 
 namespace EventSourcing.Example
 {
+    [Serializable]
     [DataContract(Namespace = "ExampleContractNamespace")]
     public class ExampleOpened : IEvent<ExampleId>
     {
@@ -21,6 +22,7 @@ namespace EventSourcing.Example
         public DateTime OpeningDate { get; private set; }
     }
 
+    [Serializable]
     [DataContract(Namespace = "ExampleContractNamespace")]
     public class OpenExample : ICommand<ExampleId>
     {

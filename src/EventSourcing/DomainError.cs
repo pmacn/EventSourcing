@@ -18,7 +18,7 @@ namespace EventSourcing
         /// <returns></returns>
         public static DomainError Named(string name, string format, params object[] args)
         {
-            Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(name));
+            Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(name), "name cannot be null, empty or whitespace");
 
             return new DomainError(string.Format(format, args))
             {

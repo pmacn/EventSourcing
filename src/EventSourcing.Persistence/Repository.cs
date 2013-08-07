@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace EventSourcing
+namespace EventSourcing.Persistence
 {
     [ContractClass(typeof(RepositoryContract))]
     public interface IRepository

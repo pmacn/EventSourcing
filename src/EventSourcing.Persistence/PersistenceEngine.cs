@@ -1,15 +1,14 @@
-﻿using EventSourcing;
-using EventSourcing.Serialization;
+﻿using EventSourcing.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace EventSourcing.Storage
+namespace EventSourcing.Persistence
 {
     [ContractClass(typeof(EventPersistanceContract))]
     public interface IEventPersistance
@@ -21,9 +20,16 @@ namespace EventSourcing.Storage
         int GetVersionFor(IAggregateIdentity aggregateId);
     }
 
-    public class InMemoryEventPersistance : IEventPersistance
+    public class MemoryEventPersistance : IEventPersistance
     {
-        private readonly ConcurrentDictionary<IAggregateIdentity, List<IEvent>> _events = new ConcurrentDictionary<IAggregateIdentity, List<IEvent>>();
+        private readonly ConcurrentDictionary<IAggregateIdentity, List<byte[]>> _events = new ConcurrentDictionary<IAggregateIdentity, List<byte[]>>();
+
+        private readonly IEventSerializer _serializer;
+
+        public MemoryEventPersistance(IEventSerializer serializer)
+        {
+            _serializer = serializer;
+        }
 
         public int GetVersionFor(IAggregateIdentity aggregateId)
         {
@@ -32,120 +38,23 @@ namespace EventSourcing.Storage
 
         public IEnumerable<IEvent> GetEventsFor(IAggregateIdentity aggregateId, int version)
         {
-            return EventsFor(aggregateId).Take(version).ToList();
+            var eventData = EventsFor(aggregateId).Take(version).ToList();
+            return eventData.Select(_serializer.Deserialize);
         }
 
-        private List<IEvent> EventsFor(IAggregateIdentity aggregateId)
+        private List<byte[]> EventsFor(IAggregateIdentity aggregateId)
         {
-            return _events.GetOrAdd(aggregateId, new List<IEvent>());
+            return _events.GetOrAdd(aggregateId, new List<byte[]>());
         }
 
         public void AppendEvents(IAggregateIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
         {
-            EventsFor(aggregateId).AddRange(eventsToAppend);
+            var eventData = eventsToAppend.Select(_serializer.Serialize);
+            EventsFor(aggregateId).AddRange(eventData);
         }
     }
 
-    public class SqlEventPersistance : IEventPersistance
-    {
-        /*
-         * Events table structure
-         * -------------------------
-         * nvarchar  AggregateId
-         * nvarchar  AggregateIdTag
-         * integer identity Version  // not used as the actual version of the aggregate just for ordering
-         * varbinary EventData
-         * 
-         */
-
-        private const string InsertEventsQuery =
-            "INSERT INTO AggregateEvents (AggregateId, AggregateIdTag, EventData) VALUES (@aggregateId, @aggregateIdTag, @eventData);";
-
-        private const string CountEventsQuery =
-            "SELECT COUNT(*) FROM AggregateEvents WHERE AggregateId = @aggregateId AND AggregateIdTag = @aggregateIdTag;";
-
-        private const string SelectEventsQuery =
-            "SELECT TOP @version EventData FROM AggregateEvents WHERE AggregateId = @aggregateId AND AggregateIdTag = @aggregateIdTag ORDER BY Version ASC;";
-
-        private readonly string _connectionString;
-
-        private readonly IEventSerializer _serializer;
-
-        public SqlEventPersistance(IEventSerializer serializer, string connectionString)
-        {
-            Contract.Requires<ArgumentNullException>(serializer != null, "serializer cannot be null");
-            Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(connectionString), "connectionString cannot be null, empty or whitespace");
-            _serializer = serializer;
-            _connectionString = connectionString;
-        }
-
-        public void AppendEvents(IAggregateIdentity aggregateId, IEnumerable<IEvent> eventsToAppend)
-        {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                using (var cmd = new SqlCommand(InsertEventsQuery, conn))
-                {
-                    cmd.Parameters.AddWithValue("@aggregateId", aggregateId.GetId());
-                    cmd.Parameters.AddWithValue("@aggregateIdTag", aggregateId.GetTag());
-                    var dataParameter = cmd.Parameters.Add("@eventData", SqlDbType.VarBinary);
-                    conn.Open();
-                    foreach (var eventData in eventsToAppend.Select(_serializer.Serialize))
-                    {
-                        dataParameter.Value = eventData;
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-        }
-
-        public IEnumerable<IEvent> GetEventsFor(IAggregateIdentity aggregateId, int version)
-        {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                using (var cmd = new SqlCommand(SelectEventsQuery, conn))
-                {
-                    cmd.Parameters.AddWithValue("@aggregateId", aggregateId.GetId());
-                    cmd.Parameters.AddWithValue("@aggregateIdTag", aggregateId.GetTag());
-                    cmd.Parameters.AddWithValue("@version", version);
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        var events = new List<IEvent>();
-                        while (reader.Read())
-                        {
-                            var eventData = reader.GetSqlBinary(reader.GetOrdinal("EventData")).Value;
-                            events.Add(_serializer.Deserialize(eventData));
-                        }
-
-                        return events;
-                    }
-                }
-            }
-        }
-
-        public int GetVersionFor(IAggregateIdentity aggregateId)
-        {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                using (var cmd = new SqlCommand(CountEventsQuery, conn))
-                {
-                    cmd.Parameters.AddWithValue("@aggregateId", aggregateId.GetId());
-                    cmd.Parameters.AddWithValue("@aggregateIdTag", aggregateId.GetTag());
-                    conn.Open();
-                    return (int)cmd.ExecuteScalar();
-                }
-            }
-        }
-
-        [ContractInvariantMethod]
-        private void InvariantMethod()
-        {
-            Contract.Invariant(!String.IsNullOrWhiteSpace(_connectionString), "_connectionString cannot be null, empty or whitespace");
-            Contract.Invariant(_serializer != null, "_serializer cannot be null");
-        }
-    }
-
-    public class FileSystemEventPersistance : IEventPersistance
+    public class SimpleFilePersistenceEngine : IEventPersistance
     {
         #region Fields
 
@@ -159,7 +68,7 @@ namespace EventSourcing.Storage
 
         #region Constructors
 
-        public FileSystemEventPersistance(IEventSerializer serializer, string storagePath)
+        public SimpleFilePersistenceEngine(IEventSerializer serializer, string storagePath)
         {
             _serializer = serializer;
             _storagePath = storagePath;

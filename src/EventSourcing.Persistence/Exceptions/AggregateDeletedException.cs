@@ -1,18 +1,7 @@
-using System.Runtime.Serialization;
-using EventSourcing;
-using EventStore;
-using EventStore.ClientAPI;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Net;
-using System.Collections.Concurrent;
-using EventStore.ClientAPI.Exceptions;
-using EventSourcing.Serialization;
-using EventSourcing.Exceptions;
+using System.Runtime.Serialization;
 
-namespace EventSourcing.Storage.Exceptions
+namespace EventSourcing.Persistence.Exceptions
 {
     [Serializable]
     public class AggregateDeletedException : Exception

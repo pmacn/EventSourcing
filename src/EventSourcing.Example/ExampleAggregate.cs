@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 
 namespace EventSourcing.Example
 {
+    [Serializable]
     public class ExampleId : AbstractAggregateIdentity<int>
     {
         public ExampleId(int id)

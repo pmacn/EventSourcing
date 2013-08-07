@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("EventSourcing.Serialization")]
+[assembly: AssemblyTitle("EventSourcing.Persistance")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("EventSourcing.Serialization")]
+[assembly: AssemblyProduct("EventSourcing.Persistance")]
 [assembly: AssemblyCopyright("Copyright © Peter MacNaughton 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("89f2572d-dace-42ba-8622-c75fa3e87ca1")]
+[assembly: Guid("e7393977-69aa-418c-9f0a-f11d22184a2d")]
 
 // Version information for an assembly consists of the following four values:
 //
