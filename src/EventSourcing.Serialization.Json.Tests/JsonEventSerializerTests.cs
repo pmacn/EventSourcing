@@ -53,7 +53,7 @@ namespace EventSourcing.Serialization.Json.Tests
             Id = id;
         }
 
-        public override int Id { get ; protected set; }
+        public override sealed int Id { get ; protected set; }
 
         public override string GetTag() { return "Test"; }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace EventSourcing
 {
@@ -10,9 +11,9 @@ namespace EventSourcing
         public DomainError(string message) : base(message) { }
 
         /// <summary>
-        /// Creates domain error exception with a string name that is easily identifiable in the tests
+        /// Creates a named domain error exception
         /// </summary>
-        /// <param name="name">The name to be used to identify this exception in tests.</param>
+        /// <param name="name">The name to be used to identify this exception.</param>
         /// <param name="format">The format.</param>
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
@@ -34,5 +35,12 @@ namespace EventSourcing
             SerializationInfo info,
             StreamingContext context)
             : base(info, context) { }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
+            info.AddValue("Name", Name);
+        }
     }
 }

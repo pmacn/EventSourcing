@@ -1,6 +1,5 @@
 ﻿using EventSourcing.ApplicationService.Exceptions;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -10,13 +9,13 @@ using System.Reflection;
 namespace EventSourcing.ApplicationService
 {
     public interface IApplicationService<in TIdentity>
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
         void Execute(ICommand<TIdentity> command);
     }
 
     public abstract class ApplicationService<TIdentity> : IApplicationService<TIdentity>
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
         private readonly IDomainErrorRouter _errorRouter;
 
@@ -55,8 +54,9 @@ namespace EventSourcing.ApplicationService
             foreach (var method in methods)
             {
                 var commandType = method.GetParameters().Single().ParameterType;
-                var commandHandler = new Action<object>(c => method.Invoke(this, new [] { c }));
-                _commandHandlers.Add(((Type)commandType), commandHandler);
+                var methodInfo = method;
+                var commandHandler = new Action<object>(c => methodInfo.Invoke(this, new [] { c }));
+                _commandHandlers.Add(commandType, commandHandler);
             }
         }
 

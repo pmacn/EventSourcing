@@ -6,7 +6,7 @@ namespace EventSourcing
     /// <summary>
     /// An event that happened in the domain
     /// </summary>
-    public partial interface IEvent
+    public interface IEvent
     {
     }
 
@@ -16,7 +16,7 @@ namespace EventSourcing
     /// </summary>
     [ContractClass(typeof(EventContract<>))]
     public interface IEvent<out TIdentity> : IEvent
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
         /// <summary>
         /// Id of the aggregate where the event originated
@@ -39,7 +39,7 @@ namespace EventSourcing
     /// <typeparam name="TIdentity"></typeparam>
     [ContractClass(typeof(CommandContract<>))]
     public interface ICommand<out TIdentity> : ICommand
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
         /// <summary>
         /// Id of the aggregate that the command is for
@@ -49,20 +49,20 @@ namespace EventSourcing
 
     [ContractClassFor(typeof(IEvent<>))]
     internal abstract  class EventContract<TIdentity> : IEvent<TIdentity>
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
         public TIdentity Id { get { throw new System.NotImplementedException(); } }
 
         [ContractInvariantMethod]
         private void InvariantMethod()
         {
-            Contract.Invariant(null != Id, "Id cannot be null");
+            Contract.Invariant(Id != null, "Id cannot be null");
         }
     }
 
     [ContractClassFor(typeof(ICommand<>))]
     internal abstract class CommandContract<TIdentity> : ICommand<TIdentity>
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
         public TIdentity Id
         {

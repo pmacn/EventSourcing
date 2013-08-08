@@ -3,6 +3,7 @@ using EventSourcing.Persistence;
 using EventSourcing.Serialization;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 
@@ -11,7 +12,8 @@ namespace EventSourcing.Example
     /// <summary>
     /// 10000ft tests
     /// </summary>
-    [TestFixture]
+    [TestFixture,
+    SuppressMessage("Microsoft.Design", "CA1001", Justification = "I am not going to implement IDisposable on my test fixtures")]
     public class AggregateWithoutStateObject
     {
         private MemoryCommandQueue _commandQueue;
@@ -65,6 +67,8 @@ namespace EventSourcing.Example
         }
     }
 
+    [TestFixture,
+    SuppressMessage("Microsoft.Design", "CA1001", Justification = "I am not going to implement IDisposable on my test fixtures")]
     public class AggregateWithStateObject
     {
         private MemoryCommandQueue _commandQueue;

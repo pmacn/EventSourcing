@@ -1,5 +1,4 @@
-﻿using EventSourcing;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -19,7 +18,7 @@ namespace EventSourcing.Persistence
     /// A conflict will automatically be assumed if there is no delegate
     /// for a specific pair of events.
     /// </summary>
-    // TODO : need some way to indicate that a specific event does not conflict with any other event.
+    // TODO : need some way to indicate that a specific event does not conflict with any other event
     public class DelegateConflictDetector : IConflictDetector
     {
         private readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, Func<object, object, bool>>> _delegates =

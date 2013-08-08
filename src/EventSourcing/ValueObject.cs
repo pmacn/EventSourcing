@@ -21,8 +21,8 @@ namespace EventSourcing
         [Pure]
         public override bool Equals(object obj)
         {
-            if (Object.ReferenceEquals(obj, null)) return false;
-            if (Object.ReferenceEquals(this, obj)) return true;
+            if (ReferenceEquals(obj, null)) return false;
+            if (ReferenceEquals(this, obj)) return true;
             return Equals(obj as ValueObject);
         }
 
@@ -46,7 +46,6 @@ namespace EventSourcing
         [Pure]
         public override int GetHashCode()
         {
-            // TODO: This hash algoritm is probably not good enough for ValueObject
             var values = GetDefiningValues();
             unchecked
             {

@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace EventSourcing
 {
     [ContractClass(typeof(AggregateStateContract<>))]
     public interface IAggregateState<TIdentity>
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
         TIdentity Id { get; set; }
     }
 
     public abstract class AggregateState<TIdentity> : IAggregateState<TIdentity>
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
-        protected AggregateState()
-        {
-
-        }
-
         public TIdentity Id { get; set; }
     }
 
@@ -26,7 +20,7 @@ namespace EventSourcing
 
     [ContractClassFor(typeof(IAggregateState<>))]
     internal abstract class AggregateStateContract<TIdentity> : IAggregateState<TIdentity>
-        where TIdentity : IAggregateIdentity
+        where TIdentity : class, IAggregateIdentity
     {
         public TIdentity Id
         {

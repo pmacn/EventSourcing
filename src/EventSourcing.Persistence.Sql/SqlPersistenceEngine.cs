@@ -5,10 +5,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace EventSourcing.Persistence.SqlServer
+namespace EventSourcing.Persistence.Sql
 {
 
     public class SqlEventPersistance : IEventPersistance

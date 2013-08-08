@@ -1,9 +1,5 @@
 ﻿using EventSourcing.Exceptions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EventSourcing
 {
@@ -21,9 +17,7 @@ namespace EventSourcing
             if (ctor == null)
                 throw new AggregateConstructionException(String.Format("Could not find a default constructor for {0}", aggregateType.Name));
 
-            ctor.Invoke(new object[0]);
-
-            throw new NotImplementedException();
+            return (TAggregate)ctor.Invoke(new object[0]);
         }
     }
 }

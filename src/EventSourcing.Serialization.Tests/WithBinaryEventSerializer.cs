@@ -1,19 +1,15 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EventSourcing.Serialization.Tests
 {
     [TestFixture]
     public class WithBinaryEventSerializer
     {
-        IEventSerializer _serializer = new BinaryEventSerializer();
+        readonly IEventSerializer _serializer = new BinaryEventSerializer();
 
-        TestEvent _event = new TestEvent(new TestId(1), "testing");
+        readonly TestEvent _event = new TestEvent(new TestId(1), "testing");
 
         [SetUp]
         public void TestSetup()
@@ -59,7 +55,7 @@ namespace EventSourcing.Serialization.Tests
             Id = id;
         }
 
-        public override int Id { get; protected set; }
+        public override sealed int Id { get; protected set; }
 
         public override string GetTag() { return "Test"; }
     }

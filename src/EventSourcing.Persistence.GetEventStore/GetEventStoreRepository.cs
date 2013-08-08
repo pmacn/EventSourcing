@@ -4,12 +4,8 @@ using EventSourcing.Serialization;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EventSourcing.Persistence.GetEventStore
 {
@@ -37,7 +33,8 @@ namespace EventSourcing.Persistence.GetEventStore
             _aggregateFactory = aggregateFactory;
         }
 
-        public TAggregate GetById<TAggregate>(IAggregateIdentity aggregateId) where TAggregate : IAggregateRoot
+        public TAggregate GetById<TAggregate>(IAggregateIdentity aggregateId)
+            where TAggregate : class, IAggregateRoot
         {
             var aggregate = _aggregateFactory.Create<TAggregate>();
             var events = GetEventsFor(aggregateId);
@@ -67,11 +64,12 @@ namespace EventSourcing.Persistence.GetEventStore
             return events.Select(GetEvent).ToArray();
         }
 
-        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate) where TIdentity : IAggregateIdentity
+        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
+            where TIdentity : class, IAggregateIdentity
         {
             var streamName = GetStreamName(aggregate.Id);
             var expectedVersion = aggregate.Version - aggregate.UncommittedEvents.Count();
-            var eventData = aggregate.UncommittedEvents.Select(CreateEventData);
+            var eventData = aggregate.UncommittedEvents.Select(CreateEventData).ToArray();
             while (true)
             {
                 try
@@ -84,7 +82,7 @@ namespace EventSourcing.Persistence.GetEventStore
                 {
                     var committedEvents = GetEventsFor(aggregate.Id, expectedVersion);
                     if (_conflictDetector.HasConflict(committedEvents, aggregate.UncommittedEvents))
-                        throw new AggregateConcurrencyException("", ex);
+                        throw new AggregateConcurrencyException("", ex); // TODO: Need a message
 
                     expectedVersion += committedEvents.Count();
                 }
@@ -100,7 +98,7 @@ namespace EventSourcing.Persistence.GetEventStore
 
         private IEvent GetEvent(ResolvedEvent resolvedEvent)
         {
-            return _serializer.Deserialize(resolvedEvent.OriginalEvent.Data) as IEvent;
+            return _serializer.Deserialize(resolvedEvent.OriginalEvent.Data);
         }
 
         private static string GetStreamName(IAggregateIdentity id)

@@ -9,10 +9,10 @@ namespace EventSourcing.Persistence
     public interface IRepository
     {
         TAggregate GetById<TAggregate>(IAggregateIdentity aggregateId)
-            where TAggregate : IAggregateRoot;
+            where TAggregate : class, IAggregateRoot;
 
         void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
-            where TIdentity : IAggregateIdentity;
+            where TIdentity : class, IAggregateIdentity;
     }
 
     public class Repository : IRepository
@@ -26,7 +26,7 @@ namespace EventSourcing.Persistence
         }
 
         public TAggregate GetById<TAggregate>(IAggregateIdentity aggregateId)
-            where TAggregate : IAggregateRoot
+            where TAggregate : class, IAggregateRoot
         {
             var stream = _store.GetEventStreamFor(aggregateId);
             var ctor = typeof(TAggregate).GetConstructor(Type.EmptyTypes);
@@ -39,7 +39,7 @@ namespace EventSourcing.Persistence
         }
 
         public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
-            where TIdentity : IAggregateIdentity
+            where TIdentity : class, IAggregateIdentity
         {
             var expectedVersion = aggregate.Version - aggregate.UncommittedEvents.Count();
             _store.AppendEventsToStream(aggregate.Id, expectedVersion, aggregate.UncommittedEvents.ToArray());
@@ -50,14 +50,16 @@ namespace EventSourcing.Persistence
     internal abstract class RepositoryContract : IRepository
     {
         [Pure]
-        public TAggregate GetById<TAggregate>(IAggregateIdentity aggregateId) where TAggregate : IAggregateRoot
+        public TAggregate GetById<TAggregate>(IAggregateIdentity aggregateId)
+            where TAggregate : class, IAggregateRoot
         {
             Contract.Requires<ArgumentNullException>(aggregateId != null, "aggregateId cannot be null");
             Contract.Ensures(Contract.Result<TAggregate>() != null, "GetById cannot return null");
             throw new NotImplementedException();
         }
 
-        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate) where TIdentity : IAggregateIdentity
+        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
+            where TIdentity : class, IAggregateIdentity
         {
             Contract.Requires<ArgumentNullException>(aggregate != null, "aggregate cannot be null");
             Contract.Requires<ArgumentException>(aggregate.UncommittedEvents != null, "aggregate.UncommittedEvents cannot be null");

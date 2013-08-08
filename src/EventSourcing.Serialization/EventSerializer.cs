@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EventSourcing.Serialization
 {
-    [ContractClass(typeof(IEventSerializerContract))]
+    [ContractClass(typeof(EventSerializerContract))]
     public interface IEventSerializer
     {
         byte[] Serialize(IEvent eventToSerialize);
@@ -16,7 +12,7 @@ namespace EventSourcing.Serialization
     }
 
     [ContractClassFor(typeof(IEventSerializer))]
-    internal abstract class IEventSerializerContract : IEventSerializer
+    internal abstract class EventSerializerContract : IEventSerializer
     {
         [Pure]
         public byte[] Serialize(IEvent eventToSerialize)

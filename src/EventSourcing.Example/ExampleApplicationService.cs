@@ -40,7 +40,7 @@ namespace EventSourcing.Example
         {
             var agg = _repository.GetById<AggregateWithStateClass>(command.Id);
             updateAction(agg);
-            _repository.Save(agg); // TODO: give expected version, it needs to move further down the chain.
+            _repository.Save(agg);
         }
     }
 }

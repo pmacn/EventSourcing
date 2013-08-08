@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace EventSourcing.Example
@@ -12,7 +11,7 @@ namespace EventSourcing.Example
             Id = id;
         }
 
-        public override int Id { get; protected set; }
+        public override sealed int Id { get; protected set; }
 
         public override string GetTag() { return "Example"; }
     }
@@ -49,17 +48,22 @@ namespace EventSourcing.Example
 
     public sealed class AggregateWithStateClass : AggregateRoot<ExampleId>
     {
-        private readonly ExampleState _state = new ExampleState();
+        private readonly ExampleState _state;
+
+        public AggregateWithStateClass()
+            : this(new ExampleState())
+        { }
+
+        private AggregateWithStateClass(ExampleState state)
+            : base(state)
+        {
+            _state = state;
+        }
 
         public override ExampleId Id
         {
             get { return _state.Id; }
             protected set { throw new NotSupportedException(); }
-        }
-
-        protected override object GetStateObject()
-        {
-            return _state;
         }
 
         public void Open(ExampleId id)

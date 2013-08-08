@@ -1,11 +1,8 @@
-﻿
-using System.Runtime.Serialization;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Reflection;
 
 namespace EventSourcing
 {
@@ -36,19 +33,11 @@ namespace EventSourcing
 
         private readonly IEventRouter _eventRouter;
 
-        protected AggregateRoot()
-            : this(new ConventionEventRouter()) { }
-
-        protected AggregateRoot(IEventRouter eventRouter)
+        protected AggregateRoot(object stateObject = null, IEventRouter eventRouter = null)
         {
-            Contract.Requires<ArgumentNullException>(eventRouter != null, "eventRouter cannot be null");
-
-            _eventRouter = eventRouter;
-            _eventRouter.Register(GetStateObject());
+            _eventRouter = eventRouter ?? new ConventionEventRouter();
+            _eventRouter.Register(stateObject ?? this);
         }
-
-        // HACK: Feels quite smelly, try to come up with a better solution
-        protected virtual object GetStateObject() { return this; }
 
         public abstract TIdentity Id { get; protected set; }
 

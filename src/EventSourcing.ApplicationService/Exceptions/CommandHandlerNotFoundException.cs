@@ -11,8 +11,8 @@ namespace EventSourcing.ApplicationService.Exceptions
         public CommandHandlerNotFoundException(string message) : base(message) { }
         public CommandHandlerNotFoundException(string message, Exception inner) : base(message, inner) { }
         protected CommandHandlerNotFoundException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
+          SerializationInfo info,
+          StreamingContext context)
             : base(info, context) { }
     }
 }

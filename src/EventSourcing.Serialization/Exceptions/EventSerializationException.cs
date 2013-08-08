@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace EventSourcing.Serialization
+namespace EventSourcing.Serialization.Exceptions
 {
     [Serializable]
     public class EventSerializationException : Exception

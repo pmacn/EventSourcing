@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
-using System.Linq;
 
 namespace EventSourcing
 {
@@ -18,13 +17,6 @@ namespace EventSourcing
         /// between different identities, while deserializing.
         /// </summary>
         string GetTag();
-
-        /// <summary>
-        /// Provides consistent hashing, which will not be affected by platforms or different
-        /// versions of .NET Framework
-        /// </summary>
-        /// <returns></returns>
-        int GetConsistentHashCode();
     }
 
     /// <summary>
@@ -32,29 +24,9 @@ namespace EventSourcing
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     [Serializable]
-    public abstract class AbstractAggregateIdentity<TKey> : IAggregateIdentity
+    public abstract class AbstractAggregateIdentity<TKey> : IAggregateIdentity, IEquatable<AbstractAggregateIdentity<TKey>>
     {
-        #region Constructors
-
-        static AbstractAggregateIdentity()
-        {
-            var type = typeof(TKey);
-            var validTypes = new Type[] { typeof(int), typeof(long), typeof(uint), typeof(ulong), typeof(Guid), typeof(string) };
-            if (validTypes.Any(t => t == type))
-                return;
-
-            throw new InvalidOperationException("Abstract identity inheritors must provide stable hash. It is not supported for:  " + type);
-        }
-
-        #endregion
-
-        #region Properties
-
         public abstract TKey Id { get; protected set; }
-
-        #endregion
-
-        #region Methods
 
         public string GetId()
         {
@@ -68,14 +40,15 @@ namespace EventSourcing
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
 
-            var identity = obj as AbstractAggregateIdentity<TKey>;
+            return Equals(obj as AbstractAggregateIdentity<TKey>);
+        }
 
-            if (identity != null)
-            {
-                return Equals(identity);
-            }
+        public bool Equals(AbstractAggregateIdentity<TKey> other)
+        {
+            if (other == null)
+                return false;
 
-            return false;
+            return other.Id.Equals(Id) && other.GetTag() == GetTag();
         }
 
         public override string ToString()
@@ -88,35 +61,6 @@ namespace EventSourcing
             return (Id.GetHashCode());
         }
 
-        public int GetConsistentHashCode()
-        {
-            var type = typeof(TKey);
-            return type == typeof(string) ? CalculateStringHash(Id.ToString()) : Id.GetHashCode();
-        }
-
-        private static int CalculateStringHash(string value)
-        {
-            if (value == null) return 42;
-            unchecked
-            {
-                return value.Aggregate(23, (current, c) => current*31 + c);
-            }
-        }
-
-        public bool Equals(AbstractAggregateIdentity<TKey> other)
-        {
-            if (other != null)
-            {
-                return other.Id.Equals(Id) && other.GetTag() == GetTag();
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        #region Operators
-
         [Pure]
         public static bool operator ==(AbstractAggregateIdentity<TKey> left, AbstractAggregateIdentity<TKey> right)
         {
@@ -128,8 +72,6 @@ namespace EventSourcing
         {
             return !Equals(left, right);
         }
-
-        #endregion
     }
 
     [ContractClassFor(typeof(IAggregateIdentity))]

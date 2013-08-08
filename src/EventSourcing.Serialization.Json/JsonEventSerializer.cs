@@ -1,18 +1,21 @@
-﻿using Newtonsoft.Json;
+﻿using EventSourcing.Serialization.Exceptions;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EventSourcing.Serialization.Json
 {
     public class JsonEventSerializer : IEventSerializer
     {
-        private static readonly JsonSerializerSettings _serializerSettings =
-            new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Objects,  };
+        private readonly JsonSerializerSettings _serializerSettings;
+
+        public JsonEventSerializer()
+            : this(new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Objects })
+        { }
+
+        public JsonEventSerializer(JsonSerializerSettings settings)
+        {
+            _serializerSettings = settings;
+        }
 
         public byte[] Serialize(IEvent eventToSerialize)
         {

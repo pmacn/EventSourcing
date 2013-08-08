@@ -1,6 +1,7 @@
 ﻿using EventSourcing.ApplicationService.Exceptions;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,10 +15,11 @@ namespace EventSourcing.ApplicationService
     public interface IApplicationServiceHost
     {
         void LoadService<TIdentity>(IApplicationService<TIdentity> service)
-            where TIdentity : IAggregateIdentity;
+            where TIdentity : class, IAggregateIdentity;
     }
 
-    public class DefaultApplicationServiceHost : IApplicationServiceHost
+    [SuppressMessage("Microsoft.Design", "CA1063", Justification = "No native resources")]
+    public class DefaultApplicationServiceHost : IApplicationServiceHost, IDisposable
     {
         private readonly ConcurrentDictionary<Type, object> _services = new ConcurrentDictionary<Type, object>();
 
@@ -36,7 +38,7 @@ namespace EventSourcing.ApplicationService
         }
 
         public void LoadService<TIdentity>(IApplicationService<TIdentity> service)
-            where TIdentity : IAggregateIdentity
+            where TIdentity : class, IAggregateIdentity
         {
             var idType = typeof(TIdentity);
             if (!_services.TryAdd(idType, service))
@@ -82,7 +84,7 @@ namespace EventSourcing.ApplicationService
         }
 
         private IApplicationService<TIdentity> GetServiceFor<TIdentity>(ICommand<TIdentity> command)
-            where TIdentity : IAggregateIdentity
+            where TIdentity : class, IAggregateIdentity
         {
             object service;
             if (_services.TryGetValue(typeof(TIdentity), out service))
@@ -90,13 +92,23 @@ namespace EventSourcing.ApplicationService
 
             throw new ApplicationServiceNotFoundException("Unable to find applcation service for commands of type " + command.GetType().Name);
         }
+
+        [SuppressMessage("Microsoft.Design", "CA1063", Justification = "No native resources")]
+        public void Dispose()
+        {
+            if (_tokenSource != null)
+            {
+                _tokenSource.Dispose();
+                _tokenSource = null;
+            }
+        }
     }
 
     [ContractClassFor(typeof(IApplicationServiceHost))]
     internal abstract class ApplicationServiceHostContract : IApplicationServiceHost
     {
         public void LoadService<TIdentity>(IApplicationService<TIdentity> service)
-            where TIdentity : IAggregateIdentity
+            where TIdentity : class, IAggregateIdentity
         {
             Contract.Requires<ArgumentNullException>(service != null, "service cannot be null");
             throw new NotImplementedException();

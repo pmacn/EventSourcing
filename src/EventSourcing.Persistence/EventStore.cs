@@ -1,14 +1,8 @@
-﻿using System.Runtime.Serialization;
-using EventSourcing;
+﻿using EventSourcing.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Net;
-using System.Collections.Concurrent;
-using EventSourcing.Serialization;
-using EventSourcing.Exceptions;
-using EventSourcing.Persistence.Exceptions;
 
 namespace EventSourcing.Persistence
 {
@@ -30,6 +24,52 @@ namespace EventSourcing.Persistence
         public IEnumerable<IEvent> Events;
     }
 
+    public class EventStore : IEventStore
+    {
+        private readonly IEventPersistance _persistance;
+
+        private readonly IEventPublisher _publisher;
+
+        private readonly IConflictDetector _conflictDetector;
+
+        public EventStore(IEventPersistance persistance, IEventPublisher publisher, IConflictDetector conflictDetector)
+        {
+            Contract.Requires<ArgumentNullException>(persistance != null, "persistance cannot be null");
+            Contract.Requires<ArgumentNullException>(publisher != null, "publisher cannot be null");
+            Contract.Requires<ArgumentNullException>(conflictDetector != null, "conflictDetector cannot be null");
+
+            _persistance = persistance;
+            _publisher = publisher;
+            _conflictDetector = conflictDetector;
+        }
+
+        public EventStream GetEventStreamFor(IAggregateIdentity aggregateId, int version)
+        {
+            var events = _persistance.GetEventsFor(aggregateId, version).ToList();
+            return new EventStream { StreamVersion = events.Count(), Events = events };
+        }
+
+        public void AppendEventsToStream(IAggregateIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
+        {
+            if(!eventsToAppend.Any())
+                return;
+
+            var actualVersion = _persistance.GetVersionFor(aggregateId);
+            if (actualVersion != expectedVersion)
+            {
+                var committedEvents = _persistance.GetEventsFor(aggregateId).Skip(expectedVersion).ToList();
+                if (_conflictDetector.HasConflict(committedEvents, eventsToAppend))
+                    throw new AggregateConcurrencyException(expectedVersion, actualVersion);
+
+                AppendEventsToStream(aggregateId, expectedVersion + committedEvents.Count, eventsToAppend);
+                return;
+            }
+
+            _persistance.AppendEvents(aggregateId, eventsToAppend);
+            _publisher.Publish(eventsToAppend);
+        }
+    }
+
     [ContractClassFor(typeof(IEventStore))]
     internal abstract class EventStoreContract : IEventStore
     {
@@ -47,51 +87,6 @@ namespace EventSourcing.Persistence
             Contract.Requires<ArgumentNullException>(eventsToAppend != null, "eventsToAppend cannot be null");
             Contract.Requires<ArgumentNullException>(Contract.ForAll(eventsToAppend, e => e != null), "None of the events in eventsToAppend can be null");
             throw new NotImplementedException();
-        }
-    }
-
-    public class EventStore : IEventStore
-    {
-        private readonly IEventPersistance _persistance;
-
-        private readonly IEventPublisher _publisher;
-
-        private readonly IConflictDetector _conflictDetector;
-
-        public EventStore(IEventPersistance persistance, IEventPublisher publisher, IConflictDetector conflictDetector)
-        {
-            Contract.Requires<ArgumentNullException>(persistance != null, "persistance cannot be null");
-            Contract.Requires<ArgumentNullException>(publisher != null, "publisher cannot be null");
-
-            _persistance = persistance;
-            _publisher = publisher;
-            _conflictDetector = conflictDetector;
-        }
-
-        public EventStream GetEventStreamFor(IAggregateIdentity aggregateId, int version)
-        {
-            var events = _persistance.GetEventsFor(aggregateId).Take(version).ToList();
-            return new EventStream { StreamVersion = events.Count(), Events = events };
-        }
-
-        public void AppendEventsToStream(IAggregateIdentity aggregateId, int expectedVersion, IEvent[] eventsToAppend)
-        {
-            var events = eventsToAppend as IEvent[] ?? eventsToAppend.ToArray();
-            if(!events.Any())
-                return;
-
-            var actualVersion = _persistance.GetVersionFor(aggregateId);
-            if (actualVersion != expectedVersion)
-            {
-                var committedEvents = _persistance.GetEventsFor(aggregateId).Skip(expectedVersion).ToList();
-                if (_conflictDetector.HasConflict(committedEvents, events))
-                    throw new AggregateConcurrencyException(expectedVersion, actualVersion);
-
-                expectedVersion += committedEvents.Count;
-            }
-
-            _persistance.AppendEvents(aggregateId, events);
-            _publisher.Publish(events);
         }
     }
 }

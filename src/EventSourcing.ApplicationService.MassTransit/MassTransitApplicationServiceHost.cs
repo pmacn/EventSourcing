@@ -1,11 +1,9 @@
-﻿using System.Diagnostics;
-using System.Linq;
-using EventSourcing.ApplicationService;
-using System;
+﻿using EventSourcing.ApplicationService.Exceptions;
 using MassTransit;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using EventSourcing.ApplicationService.Exceptions;
+using System.Linq;
 
 namespace EventSourcing.ApplicationService.MassTransit
 {
@@ -28,7 +26,7 @@ namespace EventSourcing.ApplicationService.MassTransit
             _domainErrorRouter = domainErrorRouter;
         }
 
-        public void LoadService<TIdentity>(IApplicationService<TIdentity> service) where TIdentity : IAggregateIdentity
+        public void LoadService<TIdentity>(IApplicationService<TIdentity> service) where TIdentity : class, IAggregateIdentity
         {
             var commandType = typeof (ICommand<TIdentity>);
             var subscription = _serviceBus.SubscribeHandler<ICommand<TIdentity>>(SubscriptionMethod);
@@ -38,7 +36,7 @@ namespace EventSourcing.ApplicationService.MassTransit
         }
 
         private void SubscriptionMethod<TIdentity>(ICommand<TIdentity> command)
-            where TIdentity : IAggregateIdentity
+            where TIdentity : class, IAggregateIdentity
         {
             object service;
             if(!_services.TryGetValue(command.GetType(), out service) || !(service is IApplicationService<TIdentity>))
