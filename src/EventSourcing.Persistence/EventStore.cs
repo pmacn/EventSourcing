@@ -1,6 +1,8 @@
 ﻿using EventSourcing.Exceptions;
+using EventSourcing.Persistence.Properties;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -89,4 +91,79 @@ namespace EventSourcing.Persistence
             throw new NotImplementedException();
         }
     }
+
+    #region Expanding the stream concept, some other day
+
+    public interface IEventStream : IDisposable
+    {
+        string Id { get; }
+        IEnumerable<IEvent> CommittedEvents { get; }
+        IEnumerable<IEvent> UncommittedEvents { get; }
+        void Append(IEvent eventToAppend);
+        void CommitChanges();
+    }
+
+    public sealed class OtherEventStream : IEventStream
+    {
+        List<IEvent> _committedEvents = new List<IEvent>();
+
+        List<IEvent> _uncommittedEvents = new List<IEvent>();
+
+        bool IsDisposed = false;
+
+        public string Id { get; private set; }
+
+        public IEnumerable<IEvent> CommittedEvents
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _committedEvents.ToList().AsEnumerable();
+            }
+        }
+
+        public IEnumerable<IEvent> UncommittedEvents
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _uncommittedEvents.ToList().AsEnumerable();
+            }
+        }
+
+        public void Append(IEvent eventToAppend)
+        {
+            ThrowIfDisposed();
+            _uncommittedEvents.Add(eventToAppend);
+        }
+
+        public void CommitChanges()
+        {
+            ThrowIfDisposed();
+            _committedEvents.AddRange(_uncommittedEvents);
+            _uncommittedEvents.Clear();
+        }
+
+        public void Dispose()
+        {
+            if (IsDisposed)
+                return;
+
+            IsDisposed = true;
+            _uncommittedEvents.Clear();
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(PersistenceResources.IsDisposed);
+        }
+    }
+
+    public interface IOtherEventStore
+    {
+        IEventStream CreateStream(string streamName);
+        IEventStream OpenStream(string streamName, int from, int to);
+    } 
+    #endregion
 }

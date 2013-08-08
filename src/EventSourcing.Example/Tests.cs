@@ -32,7 +32,7 @@ namespace EventSourcing.Example
             _eventPublisher = new TestEventPublisher();
             var conflictDetector = new DelegateConflictDetector();
             var eventStore = new EventStore(new MemoryEventPersistance(new BinaryEventSerializer()), _eventPublisher, conflictDetector);
-            var repo = new Repository(eventStore);
+            var repo = new Repository(eventStore, new ReflectionAggregateFactory());
             _commandQueue = new MemoryCommandQueue();
             _errorRouter = new TestDomainErrorRouter();
             _appService = new ExampleApplicationService(repo, _errorRouter);
@@ -87,7 +87,7 @@ namespace EventSourcing.Example
             _eventPublisher = new TestEventPublisher();
             var conflictDetector = new DelegateConflictDetector();
             var eventStore = new EventStore(new MemoryEventPersistance(new BinaryEventSerializer()), _eventPublisher, conflictDetector);
-            var repo = new Repository(eventStore);
+            var repo = new Repository(eventStore, new ReflectionAggregateFactory());
             _commandQueue = new MemoryCommandQueue();
             _errorRouter = new TestDomainErrorRouter();
             _appService = new ExampleWithStateApplicationService(repo, _errorRouter);

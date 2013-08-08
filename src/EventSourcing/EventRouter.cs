@@ -11,10 +11,10 @@ namespace EventSourcing
     public interface IEventRouter
     {
         void Route(IEvent eventToRoute);
-        void Register(object stateObject);
+        //void Register(object stateObject);
     }
 
-    public class ConventionEventRouter : IEventRouter
+    public sealed class ConventionEventRouter : IEventRouter
     {
         private readonly Dictionary<Type, Action<object>> _routes = new Dictionary<Type, Action<object>>();
 
@@ -62,6 +62,28 @@ namespace EventSourcing
 
             var parameters = methodInfo.GetParameters();
             return parameters.Length == 1 && typeof(IEvent).IsAssignableFrom(parameters.Single().ParameterType);
+        }
+    }
+
+    public sealed class ConfigurationEventRouter : IEventRouter
+    {
+        private readonly Dictionary<Type, object> _routes =
+            new Dictionary<Type, object>();
+
+        public void Route(IEvent eventToRoute)
+        {
+            object route;
+            if(_routes.TryGetValue(eventToRoute.GetType(), out route))
+                throw new EventHandlerNotFoundException();
+
+            ((dynamic)route)(eventToRoute);
+        }
+
+        public void Register<TEvent>(Action<TEvent> route)
+            where TEvent : IEvent
+        {
+            var eventType = typeof(TEvent);
+            _routes.Add(eventType, route);
         }
     }
 

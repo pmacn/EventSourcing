@@ -3,6 +3,7 @@ using System.Diagnostics.Contracts;
 
 namespace EventSourcing
 {
+    // TODO : Reconsider the publisher, maybe what's needed is a subscription service on the other end of the storage
     /// <summary>
     /// Publishes <see cref="IEvent"/>s to
     /// </summary>

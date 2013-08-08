@@ -29,6 +29,16 @@ namespace EventSourcing.Example
     {
         public override ExampleId Id { get; protected set; }
 
+        public ExampleAggregate()
+            : this(new ConventionEventRouter())
+        { }
+
+        private ExampleAggregate(ConventionEventRouter eventRouter)
+            : base(eventRouter)
+        {
+            eventRouter.Register(this);
+        }
+
         public void Open(ExampleId id)
         {
             if (id == null)
@@ -51,13 +61,14 @@ namespace EventSourcing.Example
         private readonly ExampleState _state;
 
         public AggregateWithStateClass()
-            : this(new ExampleState())
+            : this(new ExampleState(), new ConventionEventRouter())
         { }
 
-        private AggregateWithStateClass(ExampleState state)
-            : base(state)
+        private AggregateWithStateClass(ExampleState state, ConventionEventRouter eventRouter)
+            : base(eventRouter)
         {
             _state = state;
+            eventRouter.Register(_state);
         }
 
         public override ExampleId Id

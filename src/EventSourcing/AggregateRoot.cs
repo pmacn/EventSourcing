@@ -33,10 +33,11 @@ namespace EventSourcing
 
         private readonly IEventRouter _eventRouter;
 
-        protected AggregateRoot(object stateObject = null, IEventRouter eventRouter = null)
+        protected AggregateRoot(IEventRouter eventRouter)
         {
-            _eventRouter = eventRouter ?? new ConventionEventRouter();
-            _eventRouter.Register(stateObject ?? this);
+            Contract.Requires<ArgumentNullException>(eventRouter != null, "eventRouter");
+
+            _eventRouter = eventRouter;
         }
 
         public abstract TIdentity Id { get; protected set; }

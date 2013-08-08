@@ -9,6 +9,13 @@ namespace EventSourcing.Persistence
     [ContractClass(typeof(ConflictDetectorContract))]
     public interface IConflictDetector
     {
+        /// <summary>
+        /// Checks to see if there's a conflict between the committed and uncommitted events
+        /// </summary>
+        /// <param name="committed">The events already committed to storage.</param>
+        /// <param name="uncommitted">The events not yet committed to storage</param>
+        /// <returns>True if there is is a conflict detected, otherwise false.</returns>
+        /// <exception cref="ArgumentNullException">committed or uncommitted is null, or any of the events in committed or uncommitted is null</exception>
         bool HasConflict(IEnumerable<IEvent> committed, IEnumerable<IEvent> uncommitted);
     }
 

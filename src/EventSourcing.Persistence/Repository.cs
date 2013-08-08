@@ -19,9 +19,12 @@ namespace EventSourcing.Persistence
     {
         private readonly IEventStore _store;
 
-        public Repository(IEventStore store)
+        private readonly IAggregateFactory _aggregateFactory;
+
+        public Repository(IEventStore store, IAggregateFactory aggregateFactory)
         {
             Contract.Requires<ArgumentNullException>(store != null, "store cannot be null");
+            _aggregateFactory = aggregateFactory;
             _store = store;
         }
 
@@ -29,13 +32,9 @@ namespace EventSourcing.Persistence
             where TAggregate : class, IAggregateRoot
         {
             var stream = _store.GetEventStreamFor(aggregateId);
-            var ctor = typeof(TAggregate).GetConstructor(Type.EmptyTypes);
-            if (ctor == null)
-                throw new AggregateConstructionException(String.Format("Unable to find constructor that takes a history of events for type {0}", typeof(TAggregate).Name));
-
-            var agg = (TAggregate)ctor.Invoke(null);
-            agg.LoadFrom(stream.Events);
-            return agg;
+            var aggregate = _aggregateFactory.Create<TAggregate>();
+            aggregate.LoadFrom(stream.Events);
+            return aggregate;
         }
 
         public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)

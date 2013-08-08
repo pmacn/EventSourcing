@@ -14,6 +14,11 @@ namespace EventSourcing.ApplicationService
     [ContractClass(typeof(ApplicationServiceHostContract))]
     public interface IApplicationServiceHost
     {
+        /// <summary>
+        /// Loads a service in the host and starts processing commands for that service.
+        /// </summary>
+        /// <typeparam name="TIdentity"></typeparam>
+        /// <param name="service"></param>
         void LoadService<TIdentity>(IApplicationService<TIdentity> service)
             where TIdentity : class, IAggregateIdentity;
     }
@@ -68,9 +73,9 @@ namespace EventSourcing.ApplicationService
             if (_token.IsCancellationRequested)
                 return;
 
+            ICommand command;
             while (!_token.IsCancellationRequested)
             {
-                ICommand command;
                 if (_queueReader.TryDequeue(out command))
                 {
                     var service = GetServiceFor((dynamic)command);
