@@ -11,7 +11,6 @@ namespace EventSourcing
     public interface IEventRouter
     {
         void Route(IEvent eventToRoute);
-        //void Register(object stateObject);
     }
 
     public sealed class ConventionEventRouter : IEventRouter
@@ -73,10 +72,10 @@ namespace EventSourcing
         public void Route(IEvent eventToRoute)
         {
             object route;
-            if(_routes.TryGetValue(eventToRoute.GetType(), out route))
+            if(!_routes.TryGetValue(eventToRoute.GetType(), out route))
                 throw new EventHandlerNotFoundException();
 
-            ((dynamic)route)(eventToRoute);
+            ((dynamic)route)((dynamic)eventToRoute);
         }
 
         public void Register<TEvent>(Action<TEvent> route)

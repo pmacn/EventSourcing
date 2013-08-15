@@ -11,9 +11,9 @@ namespace EventSourcing
     {
         private readonly IEventRouter _eventRouter;
 
-        private Action<IEvent> _recordEvent;
-        
-        public Entity(IEventRouter eventRouter, Action<IEvent> recordEvent, object stateObject = null)
+        private readonly Action<IEvent> _recordEvent;
+
+        protected Entity(IEventRouter eventRouter, Action<IEvent> recordEvent)
         {
             Contract.Requires<ArgumentNullException>(eventRouter != null, "eventRouter");
             Contract.Requires<ArgumentNullException>(recordEvent != null, "recordEvent");
@@ -22,27 +22,69 @@ namespace EventSourcing
             _recordEvent = recordEvent;
         }
 
-        public void Apply(IEvent eventToApply)
+        public void Apply(IEvent @event)
         {
-            ApplyChange(eventToApply, false);
+            ApplyChange(@event, false);
         }
 
-        protected void ApplyChange(IEvent eventToApply)
+        protected void ApplyChange(IEvent @event)
         {
-            ApplyChange(eventToApply, true);
+            Contract.Requires<ArgumentNullException>(@event != null, "@event");
+            ApplyChange(@event, true);
         }
 
-        private void ApplyChange(IEvent eventToApply, bool shouldRecordEvent)
+        private void ApplyChange(IEvent @event, bool shouldRecordEvent)
         {
-            Contract.Requires<ArgumentNullException>(eventToApply != null, "eventToApply");
-            _eventRouter.Route(eventToApply);
+            Contract.Requires<ArgumentNullException>(@event != null, "@event");
+            _eventRouter.Route(@event);
             if (shouldRecordEvent)
-                _recordEvent(eventToApply);
+                _recordEvent(@event);
         }
     }
 
-    public abstract class AggregateRootEntity<TIdentity> where TIdentity : class, IAggregateIdentity
+    public abstract class AggregateRootEntity<TIdentity>
+        where TIdentity : class, IAggregateIdentity
     {
+        private readonly UncommittedEvents _uncommittedEvents = new UncommittedEvents();
 
+        private readonly IEventRouter _eventRouter;
+
+        protected AggregateRootEntity(IEventRouter eventRouter)
+        {
+            Contract.Requires<ArgumentNullException>(eventRouter != null, "eventRouter");
+            _eventRouter = eventRouter;
+        }
+
+        public TIdentity Id { get; protected set; }
+
+        public int Version { get; private set; }
+
+        public IUncommittedEvents UncommittedEvents { get { return _uncommittedEvents; } }
+
+        protected void ApplyChange(IEvent @event)
+        {
+            Contract.Requires<ArgumentNullException>(@event != null, "@event");
+            ApplyChange(@event, true);
+        }
+
+        private void ApplyChange(IEvent @event, bool isNew)
+        {
+            _eventRouter.Route(@event);
+            Version++;
+            if(isNew)
+                _uncommittedEvents.Append(@event);
+        }
+
+        public void LoadFrom(IEnumerable<IEvent> history)
+        {
+            Contract.Requires<ArgumentNullException>(history != null, "history");
+            Contract.Requires<ArgumentNullException>(Contract.ForAll(history, e => e != null), "event in history");
+
+            foreach (var @event in history)
+            {
+                
+                ApplyChange(@event, false);
+            }
+        }
     }
 }
