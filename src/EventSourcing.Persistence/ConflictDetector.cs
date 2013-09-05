@@ -19,7 +19,6 @@ namespace EventSourcing.Persistence
         bool HasConflict(IEnumerable<IEvent> committed, IEnumerable<IEvent> uncommitted);
     }
 
-
     /// <summary>
     /// Conflict detector that registers delegates to detect conflicts.
     /// A conflict will automatically be assumed if there is no delegate
