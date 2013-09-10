@@ -58,7 +58,7 @@ namespace EventSourcing
 
         public override int GetHashCode()
         {
-            return (Id.GetHashCode());
+            return Id.GetHashCode();
         }
 
         [Pure]
