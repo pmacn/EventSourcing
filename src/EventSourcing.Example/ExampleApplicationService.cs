@@ -9,19 +9,13 @@ namespace EventSourcing.Example
         private readonly Repository _repository;
 
         public ExampleApplicationService(Repository repository, IDomainErrorRouter errorRouter)
-            : base(errorRouter)
+            : base(repository, errorRouter)
         {
             _repository = repository;
         }
 
-        public void When(OpenExample c) { Update(c.Id, e => e.Open(c.Id)); }
+        public void When(OpenExample c) { Update<ExampleAggregate, ExampleId>(c, e => e.Open(c.Id)); }
 
-        private void Update(ExampleId aggregateId, Action<ExampleAggregate> updateAction)
-        {
-            var agg = _repository.GetById<ExampleAggregate>(aggregateId);
-            updateAction(agg);
-            _repository.Save(agg);
-        }
     }
 
     public class ExampleWithStateApplicationService : ApplicationService<ExampleId>
@@ -29,7 +23,7 @@ namespace EventSourcing.Example
         private readonly Repository _repository;
 
         public ExampleWithStateApplicationService(Repository repository, IDomainErrorRouter errorRouter)
-            : base(errorRouter)
+            : base(repository, errorRouter)
         {
             _repository = repository;
         }

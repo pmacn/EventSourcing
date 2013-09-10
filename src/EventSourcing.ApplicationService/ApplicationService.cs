@@ -1,4 +1,6 @@
 ﻿using EventSourcing.ApplicationService.Exceptions;
+using EventSourcing.Exceptions;
+using EventSourcing.Persistence;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,12 +21,15 @@ namespace EventSourcing.ApplicationService
     {
         private readonly IDomainErrorRouter _errorRouter;
 
+        private readonly IRepository _repository;
+
         private readonly Dictionary<Type, Action<ICommand>> _commandHandlers = new Dictionary<Type, Action<ICommand>>();
 
-        protected ApplicationService(IDomainErrorRouter errorRouter)
+        protected ApplicationService(IRepository repository, IDomainErrorRouter errorRouter)
         {
             Contract.Requires<ArgumentNullException>(errorRouter != null, "errorRouter cannot be null");
             
+            _repository = repository;
             _errorRouter = errorRouter;
             SetupCommandHandlers();
         }
@@ -46,6 +51,18 @@ namespace EventSourcing.ApplicationService
                 else
                     throw;
             }
+        }
+
+        protected void Update<TAggregate, TIdentity>(ICommand<TIdentity> command, Action<TAggregate> action)
+            where TAggregate : class, IAggregateRoot<TIdentity>
+            where TIdentity : class, IAggregateIdentity
+        {
+            var aggregate = _repository.GetById<TAggregate>(command.Id);
+            if (aggregate.Version != command.ExpectedVersion)
+                throw new AggregateConcurrencyException();
+
+            action(aggregate);
+            _repository.Save(aggregate);
         }
 
         private void SetupCommandHandlers()

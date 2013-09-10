@@ -82,6 +82,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EventSourcing.Persistence\EventSourcing.Persistence.csproj">
+      <Project>{bdd8e94b-500f-4ea5-95c5-c68116211159}</Project>
+      <Name>EventSourcing.Persistence</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EventSourcing\EventSourcing.csproj">
       <Project>{712a91cd-01c1-4fcc-a7e7-44a4586c21f4}</Project>
       <Name>EventSourcing</Name>

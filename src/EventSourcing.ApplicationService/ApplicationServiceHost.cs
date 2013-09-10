@@ -95,7 +95,7 @@ namespace EventSourcing.ApplicationService
             if (_services.TryGetValue(typeof(TIdentity), out service))
                 return service as IApplicationService<TIdentity>;
 
-            throw new ApplicationServiceNotFoundException("Unable to find applcation service for commands of type " + command.GetType().Name);
+            throw new ApplicationServiceNotFoundException("Unable to find application service for commands of type " + command.GetType().Name);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1063", Justification = "No native resources")]
