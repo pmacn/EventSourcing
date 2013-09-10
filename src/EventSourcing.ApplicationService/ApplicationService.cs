@@ -46,7 +46,7 @@ namespace EventSourcing.ApplicationService
             }
             catch (TargetInvocationException error)
             {
-                if(error.InnerException is DomainError)
+                if (error.InnerException is DomainError)
                     _errorRouter.Route(error.InnerException as DomainError);
                 else
                     throw;
