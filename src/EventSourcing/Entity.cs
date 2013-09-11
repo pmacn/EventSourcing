@@ -11,34 +11,19 @@ namespace EventSourcing
     {
         private readonly IEventRouter _eventRouter;
 
-        private readonly Action<IEvent> _recordEvent;
+        protected readonly Action<IEvent> ApplyChange;
 
-        protected Entity(IEventRouter eventRouter, Action<IEvent> recordEvent)
+        protected Entity(IEventRouter eventRouter, Action<IEvent> applyChange)
         {
-            Contract.Requires<ArgumentNullException>(eventRouter != null, "eventRouter");
-            Contract.Requires<ArgumentNullException>(recordEvent != null, "recordEvent");
+            Contract.Requires<ArgumentNullException>(applyChange != null, "recordEvent");
 
             _eventRouter = eventRouter;
-            _recordEvent = recordEvent;
+            ApplyChange = applyChange;
         }
 
         public void Apply(IEvent @event)
         {
-            ApplyChange(@event, false);
-        }
-
-        protected void ApplyChange(IEvent @event)
-        {
-            Contract.Requires<ArgumentNullException>(@event != null, "@event");
-            ApplyChange(@event, true);
-        }
-
-        private void ApplyChange(IEvent @event, bool shouldRecordEvent)
-        {
-            Contract.Requires<ArgumentNullException>(@event != null, "@event");
             _eventRouter.Route(@event);
-            if (shouldRecordEvent)
-                _recordEvent(@event);
         }
     }
 

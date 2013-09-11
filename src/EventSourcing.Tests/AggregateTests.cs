@@ -31,6 +31,10 @@ namespace EventSourcing.Tests
             aggregate.AddEntity(entityId, text);
 
             Assert.IsInstanceOf<EntityAdded>(aggregate.UncommittedEvents.Single());
+
+            aggregate.UncommittedEvents.MarkAsCommitted();
+            aggregate.UpdateEntityText(1, "new entity text");
+            Assert.IsInstanceOf<EntityTextUpdated>(aggregate.UncommittedEvents.Single());
         }
 
         [Serializable]
@@ -59,6 +63,7 @@ namespace EventSourcing.Tests
             {
                 eventRouter.Register<EntityAdded>(When);
                 eventRouter.Register<AggregateCreated>(When);
+                eventRouter.Register<EntityTextUpdated>(When);
             }
 
             public void Create(TestId id)
@@ -68,7 +73,23 @@ namespace EventSourcing.Tests
 
             public void AddEntity(int entityId, string text)
             {
-                ApplyChange(new EntityAdded(Id, entityId, text));
+                if(_entities.Any(e => e.Id == entityId))
+                    throw DomainError.Named("entity-already-exists", String.Format("TestAggregate {0} already has an entity with id {1}", Id, entityId));
+
+                var entity = new TestEntity(ApplyChange);
+                // initializing entities both here and in the eventhandler seems like a bad idea
+                // maybe creation logic/constraints should be handled by the aggregate root
+                // rather than the Entity constructor
+                entity.Create(Id, entityId, text);
+            }
+
+            public void UpdateEntityText(int entityId, string updatedText)
+            {
+                var entity = _entities.SingleOrDefault(e => e.Id == entityId);
+                if (entity == null)
+                    throw DomainError.Named("no-such-entity", String.Format("Could not find entity with id {0} in TestAggregate {1}", entityId, Id));
+
+                entity.UpdateText(updatedText);
             }
 
             #region EventHandlers
@@ -85,15 +106,26 @@ namespace EventSourcing.Tests
                 _entities.Add(entity);
             }
 
+            private void When(EntityTextUpdated e)
+            {
+                var entity = _entities.Single(x => x.Id == e.EntityId);
+                entity.Apply(e);
+            }
+
             #endregion
         }
 
-        public sealed class TestEntity : Entity
+        [Serializable]
+        public class TestEntity : Entity
         {
-            public TestEntity(Action<IEvent> registerEvent) : this(new ConventionEventRouter(), registerEvent) { }
+            private TestId _testId;
 
-            private TestEntity(ConventionEventRouter eventRouter, Action<IEvent> registerEvent)
-                : base(eventRouter, registerEvent)
+            public TestEntity(Action<IEvent> applyChange)
+                : this(new ConventionEventRouter(), applyChange)
+            { }
+
+            private TestEntity(ConventionEventRouter eventRouter, Action<IEvent> applyChange)
+                : base(eventRouter, applyChange)
             {
                 eventRouter.Register(this);
             }
@@ -102,13 +134,34 @@ namespace EventSourcing.Tests
 
             public string Text { get; private set; }
 
+            public void Create(TestId testId, int id, string text)
+            {
+                if (id < 0)
+                    throw DomainError.Named("invalid-entity-id", "Entity id cannot be negative");
+                if (String.IsNullOrWhiteSpace(text))
+                    throw DomainError.Named("entity-text-validation", "Entity text cannot be null, empty or whitespace");
+
+                ApplyChange(new EntityAdded(testId, id, text));
+            }
+
+            public void UpdateText(string newText)
+            {
+                if (String.IsNullOrWhiteSpace(newText))
+                    throw DomainError.Named("entity-text-validation", "Entity text cannot be null, empty or whitespace");
+
+                ApplyChange(new EntityTextUpdated(_testId, Id, newText));
+            }
+
             #region EventHandlers
 
             private void When(EntityAdded e)
             {
+                _testId = e.Id;
                 Id = e.EntityId;
                 Text = e.Text;
             }
+
+            private void When(EntityTextUpdated e) { Text = e.UpdatedText; }
 
             #endregion
         }
@@ -139,6 +192,22 @@ namespace EventSourcing.Tests
             [DataMember(Order = 1)] public TestId Id { get; private set; }
             [DataMember(Order = 2)] public int EntityId { get; private set; }
             [DataMember(Order = 3)] public string Text { get; private set; }
+        }
+
+        [Serializable]
+        [DataContract(Namespace = "TestContractNamespace")]
+        public class EntityTextUpdated : IEvent<TestId>
+        {
+            public EntityTextUpdated(TestId aggregateId, int entityId, string updatedText)
+            {
+                Id = aggregateId;
+                EntityId = entityId;
+                UpdatedText = updatedText;
+            }
+
+            [DataMember(Order = 1)] public TestId Id { get; private set; }
+            [DataMember(Order = 2)] public int EntityId { get; private set; }
+            [DataMember(Order = 3)] public string UpdatedText { get; private set; }
         }
     }
 }
