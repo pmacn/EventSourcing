@@ -73,14 +73,16 @@ namespace EventSourcing.Tests
 
             public void AddEntity(int entityId, string text)
             {
+                // It's a little awkward having these checks here rather than in the TestEntity
+                // But feels better than the alternative for now.
+                if (entityId < 0)
+                    throw DomainError.Named("invalid-entity-id", "Entity id cannot be negative");
+                if (String.IsNullOrWhiteSpace(text))
+                    throw DomainError.Named("entity-text-validation", "Entity text cannot be null, empty or whitespace");
                 if(_entities.Any(e => e.Id == entityId))
                     throw DomainError.Named("entity-already-exists", String.Format("TestAggregate {0} already has an entity with id {1}", Id, entityId));
 
-                var entity = new TestEntity(ApplyChange);
-                // initializing entities both here and in the eventhandler seems like a bad idea
-                // maybe creation logic/constraints should be handled by the aggregate root
-                // rather than the Entity constructor
-                entity.Create(Id, entityId, text);
+                ApplyChange(new EntityAdded(Id, entityId, text));
             }
 
             public void UpdateEntityText(int entityId, string updatedText)
@@ -133,16 +135,6 @@ namespace EventSourcing.Tests
             public int Id { get; private set; }
 
             public string Text { get; private set; }
-
-            public void Create(TestId testId, int id, string text)
-            {
-                if (id < 0)
-                    throw DomainError.Named("invalid-entity-id", "Entity id cannot be negative");
-                if (String.IsNullOrWhiteSpace(text))
-                    throw DomainError.Named("entity-text-validation", "Entity text cannot be null, empty or whitespace");
-
-                ApplyChange(new EntityAdded(testId, id, text));
-            }
 
             public void UpdateText(string newText)
             {
