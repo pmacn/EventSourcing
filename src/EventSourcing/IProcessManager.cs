@@ -9,7 +9,9 @@ namespace EventSourcing
     public interface IProcessManager
     {
         Guid Id { get; }
+
         bool Completed { get; }
+
         IEnumerable<ICommand> Commands { get; }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reflection;
 
 namespace EventSourcing.ApplicationService.MassTransit
 {
@@ -28,18 +29,34 @@ namespace EventSourcing.ApplicationService.MassTransit
 
         public void LoadService<TIdentity>(IApplicationService<TIdentity> service) where TIdentity : class, IAggregateIdentity
         {
-            var commandType = typeof (ICommand<TIdentity>);
-            var subscription = _serviceBus.SubscribeHandler<ICommand<TIdentity>>(SubscriptionMethod);
+            var identityType = typeof (TIdentity);
+            var methods = service.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public).Where(m => m.Name == "When" && m.GetParameters().Count() == 1);
 
-            _services.Add(commandType, service);
-            _subscriptions.Add(subscription);
+            foreach (var method in methods) {
+                var sub = SubscribeHandlerMethod<TIdentity>(service, method);
+                _subscriptions.Add(sub);
+            }
+
+            _services.Add(identityType, service);
+        }
+
+        private UnsubscribeAction SubscribeHandlerMethod<TIdentity>(IApplicationService<TIdentity> service, MethodInfo method)
+            where TIdentity : class, IAggregateIdentity
+        {
+            var commandType = method.GetParameters().Single().ParameterType;
+            var handlerType = typeof(Action<>).MakeGenericType(commandType);
+            var d = method.CreateDelegate(handlerType, service);
+            var subMethod = typeof(HandlerSubscriptionExtensions).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                                                                 .Single(m => m.Name == "SubscribeHandler" && m.GetParameters().Count() == 2)
+                                                                 .MakeGenericMethod(commandType);
+            return subMethod.Invoke(null, new object[] { _serviceBus, d }) as UnsubscribeAction;
         }
 
         private void SubscriptionMethod<TIdentity>(ICommand<TIdentity> command)
             where TIdentity : class, IAggregateIdentity
         {
             object service;
-            if(!_services.TryGetValue(command.GetType(), out service) || !(service is IApplicationService<TIdentity>))
+            if(!_services.TryGetValue(typeof(TIdentity), out service) || !(service is IApplicationService<TIdentity>))
                 throw new ApplicationServiceNotFoundException();
 
             try

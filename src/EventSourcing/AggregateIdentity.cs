@@ -48,7 +48,7 @@ namespace EventSourcing
             if (other == null)
                 return false;
 
-            return other.Id.Equals(Id) && other.GetTag() == GetTag();
+            return this.GetId() == other.GetId();
         }
 
         public override string ToString()

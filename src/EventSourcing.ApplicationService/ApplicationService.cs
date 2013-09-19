@@ -37,8 +37,9 @@ namespace EventSourcing.ApplicationService
         public void Execute(ICommand<TIdentity> command)
         {
             Action<ICommand> handler;
-            if (!_commandHandlers.TryGetValue(command.GetType(), out handler))
-                throw new CommandHandlerNotFoundException();
+            handler = _commandHandlers.Single(kvp => kvp.Key.IsAssignableFrom(command.GetType())).Value;
+            //if (!_commandHandlers.TryGetValue(command.GetType(), out handler))
+            //    throw new CommandHandlerNotFoundException();
 
             try
             {

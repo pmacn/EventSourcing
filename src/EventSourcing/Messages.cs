@@ -27,14 +27,14 @@ namespace EventSourcing
     /// <summary>
     /// A command to be executed in the domain
     /// </summary>
+    [ContractClass(typeof(CommandContract))]
     public interface ICommand
     {
         int ExpectedVersion { get; }
     }
 
     /// <summary>
-    /// A command to be executed by an aggregate with an Id of type
-    /// <typeparamref name="TIdentity"/>
+    /// A command to be executed by an aggregate with an Id of type <typeparamref name="TIdentity"/>
     /// </summary>
     /// <typeparam name="TIdentity"></typeparam>
     [ContractClass(typeof(CommandContract<>))]
@@ -47,8 +47,10 @@ namespace EventSourcing
         TIdentity Id { get; }
     }
 
+    #region Contract classes
+
     [ContractClassFor(typeof(IEvent<>))]
-    internal abstract  class EventContract<TIdentity> : IEvent<TIdentity>
+    internal abstract class EventContract<TIdentity> : IEvent<TIdentity>
         where TIdentity : class, IAggregateIdentity
     {
         public TIdentity Id { get { throw new System.NotImplementedException(); } }
@@ -57,6 +59,21 @@ namespace EventSourcing
         private void InvariantMethod()
         {
             Contract.Invariant(Id != null, "Id cannot be null");
+        }
+    }
+
+    [ContractClassFor(typeof(ICommand))]
+    internal abstract class CommandContract : ICommand
+    {
+        public int ExpectedVersion
+        {
+            get { throw new System.NotImplementedException(); }
+        }
+
+        [ContractInvariantMethod]
+        private void InvariantMethod()
+        {
+            Contract.Invariant(ExpectedVersion >= 0, "ExpectedVersion cannot be negative");
         }
     }
 
@@ -78,7 +95,8 @@ namespace EventSourcing
         private void InvariantMethod()
         {
             Contract.Invariant(Id != null, "Id cannot be null");
-            Contract.Invariant(ExpectedVersion >= 0, "ExpectedVersion cannot be negative");
         }
     }
+    
+    #endregion
 }
