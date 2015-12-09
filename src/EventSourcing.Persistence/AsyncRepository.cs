@@ -7,7 +7,6 @@ namespace EventSourcing.Persistence
         Task<TAggregate> GetByIdAsync<TAggregate>(IAggregateIdentity aggregateId)
             where TAggregate : class, IAggregateRoot;
 
-        Task SaveAsync<TIdentity>(IAggregateRoot<TIdentity> aggregate)
-            where TIdentity : class, IAggregateIdentity;
+        Task SaveAsync(IAggregateRoot aggregate);
     }
 }

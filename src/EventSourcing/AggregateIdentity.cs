@@ -4,7 +4,7 @@ using System.Diagnostics.Contracts;
 namespace EventSourcing
 {
     [ContractClass(typeof(AggregateIdentityContract))]
-    public interface IAggregateIdentity
+    public interface IAggregateIdentity : IEquatable<IAggregateIdentity>
     {
         /// <summary>
         /// Gets the id, converted to a string. Only alphanumerics and '-' are allowed.
@@ -43,6 +43,11 @@ namespace EventSourcing
             return Equals(obj as AbstractAggregateIdentity<TKey>);
         }
 
+        public bool Equals(IAggregateIdentity other)
+        {
+            return this.Equals(other as AbstractAggregateIdentity<TKey>);
+        }
+
         public bool Equals(AbstractAggregateIdentity<TKey> other)
         {
             if (other == null)
@@ -77,6 +82,12 @@ namespace EventSourcing
     [ContractClassFor(typeof(IAggregateIdentity))]
     internal abstract class AggregateIdentityContract : IAggregateIdentity
     {
+        [Pure]
+        public bool Equals(IAggregateIdentity other)
+        {
+            throw new NotImplementedException();
+        }
+
         [Pure]
         public string GetId()
         {

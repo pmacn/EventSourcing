@@ -25,9 +25,9 @@ namespace EventSourcing.Example
         }
     }
 
-    public sealed class ExampleAggregate : AggregateRoot<ExampleId>
+    public sealed class ExampleAggregate : AggregateRoot
     {
-        public override ExampleId Id { get; protected set; }
+        public override IAggregateIdentity Id { get; protected set; }
 
         public ExampleAggregate()
             : this(new ConventionEventRouter())
@@ -56,7 +56,7 @@ namespace EventSourcing.Example
         }
     }
 
-    public sealed class AggregateWithStateClass : AggregateRoot<ExampleId>
+    public sealed class AggregateWithStateClass : AggregateRoot
     {
         private readonly ExampleState _state;
 
@@ -71,7 +71,7 @@ namespace EventSourcing.Example
             eventRouter.Register(_state);
         }
 
-        public override ExampleId Id
+        public override IAggregateIdentity Id
         {
             get { return _state.Id; }
             protected set { throw new NotSupportedException(); }

@@ -11,8 +11,7 @@ namespace EventSourcing.Persistence
         TAggregate GetById<TAggregate>(IAggregateIdentity aggregateId)
             where TAggregate : class, IAggregateRoot;
 
-        void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
-            where TIdentity : class, IAggregateIdentity;
+        void Save(IAggregateRoot aggregate);
     }
 
     public class Repository : IRepository
@@ -37,8 +36,7 @@ namespace EventSourcing.Persistence
             return aggregate;
         }
 
-        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
-            where TIdentity : class, IAggregateIdentity
+        public void Save(IAggregateRoot aggregate)
         {
             var expectedVersion = aggregate.Version - aggregate.UncommittedEvents.Count();
             _store.AppendEventsToStream(aggregate.Id, expectedVersion, aggregate.UncommittedEvents.ToArray());
@@ -57,8 +55,7 @@ namespace EventSourcing.Persistence
             throw new NotImplementedException();
         }
 
-        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
-            where TIdentity : class, IAggregateIdentity
+        public void Save(IAggregateRoot aggregate)
         {
             Contract.Requires<ArgumentNullException>(aggregate != null, "aggregate cannot be null");
             Contract.Requires<ArgumentException>(aggregate.UncommittedEvents != null, "aggregate.UncommittedEvents cannot be null");
