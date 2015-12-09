@@ -65,7 +65,7 @@ namespace EventSourcing.Persistence.GetEventStore
             return _eventSerializer.Deserialize(eventData);
         }
 
-        public async Task SaveAsync<TIdentity>(IAggregateRoot<TIdentity> aggregate) where TIdentity : class, IAggregateIdentity
+        public async Task SaveAsync(IAggregateRoot aggregate)
         {
             var expectedVersion = aggregate.Version - aggregate.UncommittedEvents.Count();
             var eventData = aggregate.UncommittedEvents.Select(CreateEventData);

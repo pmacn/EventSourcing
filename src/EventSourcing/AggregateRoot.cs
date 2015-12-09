@@ -9,25 +9,20 @@ namespace EventSourcing
     [ContractClass(typeof(AggregateRootContract))]
     public interface IAggregateRoot
     {
+        IAggregateIdentity Id { get; }
+
         int Version { get; }
 
         IUncommittedEvents UncommittedEvents { get; }
 
         void LoadFrom(IEnumerable<IEvent> history);
     }
-
-    public interface IAggregateRoot<out TIdentity> : IAggregateRoot
-        where TIdentity : IAggregateIdentity
-    {
-        TIdentity Id { get; }
-    }
     
     /// <summary>
     /// A generic aggregate root with wiring to apply events and keep uncommitted events
     /// </summary>
     /// <typeparam name="TIdentity"></typeparam>
-    public abstract class AggregateRoot<TIdentity> : IAggregateRoot<TIdentity>
-        where TIdentity : IAggregateIdentity
+    public abstract class AggregateRoot : IAggregateRoot
     {
         private readonly UncommittedEvents _uncommittedEvents = new UncommittedEvents();
 
@@ -40,7 +35,7 @@ namespace EventSourcing
             _eventRouter = eventRouter;
         }
 
-        public abstract TIdentity Id { get; protected set; }
+        public abstract IAggregateIdentity Id { get; protected set; }
 
         public int Version { get; private set; }
 
@@ -99,6 +94,11 @@ namespace EventSourcing
     [ContractClassFor(typeof(IAggregateRoot))]
     internal abstract class AggregateRootContract : IAggregateRoot
     {
+        public IAggregateIdentity Id
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         public int Version
         {
             get { throw new NotImplementedException(); }

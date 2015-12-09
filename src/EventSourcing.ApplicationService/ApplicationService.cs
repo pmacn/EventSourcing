@@ -55,7 +55,7 @@ namespace EventSourcing.ApplicationService
         }
 
         protected void Update<TAggregate, TIdentity>(ICommand<TIdentity> command, Action<TAggregate> action)
-            where TAggregate : class, IAggregateRoot<TIdentity>
+            where TAggregate : class, IAggregateRoot
             where TIdentity : class, IAggregateIdentity
         {
             var aggregate = _repository.GetById<TAggregate>(command.Id);

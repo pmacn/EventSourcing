@@ -64,8 +64,7 @@ namespace EventSourcing.Persistence.GetEventStore
             return events.Select(GetEvent).ToArray();
         }
 
-        public void Save<TIdentity>(IAggregateRoot<TIdentity> aggregate)
-            where TIdentity : class, IAggregateIdentity
+        public void Save(IAggregateRoot aggregate)
         {
             var streamName = GetStreamName(aggregate.Id);
             var expectedVersion = aggregate.Version - aggregate.UncommittedEvents.Count();
