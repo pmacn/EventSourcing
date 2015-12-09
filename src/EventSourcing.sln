@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing", "EventSourcing\EventSourcing.csproj", "{712A91CD-01C1-4FCC-A7E7-44A4586C21F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.Example", "EventSourcing.Example\EventSourcing.Example.csproj", "{2F072D89-603C-43BC-8CF7-62E32D93CD94}"
@@ -10,8 +12,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1B04F628-F45D-4D4E-BAFF-BB9EC4D224A2}"
 	ProjectSection(SolutionItems) = preProject
 		..\.nuget\NuGet.Config = ..\.nuget\NuGet.Config
-		..\.nuget\NuGet.exe = ..\.nuget\NuGet.exe
-		..\.nuget\NuGet.targets = ..\.nuget\NuGet.targets
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcing.ApplicationService", "EventSourcing.ApplicationService\EventSourcing.ApplicationService.csproj", "{3D205F92-F9D5-4C67-9A23-E0F10DF1F435}"
