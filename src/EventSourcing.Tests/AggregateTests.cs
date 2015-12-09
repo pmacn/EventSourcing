@@ -47,7 +47,7 @@ namespace EventSourcing.Tests
 
             public override int Id { get; protected set; }
 
-            public override string GetTag() { return "Test"; }
+            public override string GetTag() { return "Test";}
         }
 
         public sealed class TestAggregate : AggregateRootEntity<TestId>

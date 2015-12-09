@@ -80,14 +80,14 @@ namespace EventSourcing
         [Pure]
         public string GetId()
         {
-            Contract.Ensures(String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
+            Contract.Ensures(!String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
             throw new NotImplementedException();
         }
 
         [Pure]
         public string GetTag()
         {
-            Contract.Ensures(String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
+            Contract.Ensures(!String.IsNullOrWhiteSpace(Contract.Result<string>()), "GetId cannot return a null, empty or whitespace string");
             throw new NotImplementedException();
         }
 
